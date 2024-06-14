@@ -1061,7 +1061,7 @@ static inline void do_gettimeofday(struct timeval *tv)
 
 #ifdef ANDROID_BKPORT
 #if (ANDROID_VERSION >= 13) && (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 41))
-#define ANDROID13_KERNEL515_BKPORT
+//#define ANDROID13_KERNEL515_BKPORT
 #define CFG80211_BKPORT_MLO
 #endif /* ANDROID_VERSION >= 13 && KERNEL >= 5.15.41 */
 #endif /* ANDROID_BKPORT */

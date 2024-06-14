@@ -1239,10 +1239,10 @@ dhdsdio_clk_kso_enab(dhd_bus_t *bus, bool on)
 	int err = 0;
 	int try_cnt = 0, try_max = CUSTOM_MAX_KSO_ATTEMPTS;
 	struct dhd_conf *conf = bus->dhd->conf;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)) && !defined(ANDROID13_KERNEL515_BKPORT)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0))
 	wifi_adapter_info_t *adapter = NULL;
 	uint32 bus_type = -1, bus_num = -1, slot_num = -1;
-#elif (LINUX_VERSION_CODE <= KERNEL_VERSION(4, 2, 0))
+#elif (LINUX_VERSION_CODE <= KERNEL_VERSION(4, 20, 0))
 	struct mmc_host *host;
 	struct sdioh_info *sd = (struct sdioh_info *)(bus->sdh->sdioh);
 	struct sdio_func *func = sd->func[SDIO_FUNC_0];
@@ -1250,13 +1250,13 @@ dhdsdio_clk_kso_enab(dhd_bus_t *bus, bool on)
 
 	KSO_DBG(("%s> op:%s\n", __FUNCTION__, (on ? "KSO_SET" : "KSO_CLR")));
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)) && !defined(ANDROID13_KERNEL515_BKPORT)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0))
 	dhd_bus_get_ids(bus, &bus_type, &bus_num, &slot_num);
 	adapter = dhd_wifi_platform_get_adapter(bus_type, bus_num, slot_num);
 	sdio_retune_crc_disable(adapter->sdio_func);
 	if (on)
 		sdio_retune_hold_now(adapter->sdio_func);
-#elif (LINUX_VERSION_CODE <= KERNEL_VERSION(4, 2, 0))
+#elif (LINUX_VERSION_CODE <= KERNEL_VERSION(4, 20, 0))
 	host = func->card->host;
 	mmc_retune_disable(host);
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0) */
@@ -1384,11 +1384,11 @@ dhdsdio_clk_kso_enab(dhd_bus_t *bus, bool on)
 #endif /* !defined(NDIS) */
 
 exit:
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)) && !defined(ANDROID13_KERNEL515_BKPORT)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0))
 	if (on)
 		sdio_retune_release(adapter->sdio_func);
 	sdio_retune_crc_enable(adapter->sdio_func);
-#elif (LINUX_VERSION_CODE <= KERNEL_VERSION(4, 2, 0))
+#elif (LINUX_VERSION_CODE <= KERNEL_VERSION(4, 20, 0))
 	mmc_retune_enable(host);
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0) */
 
