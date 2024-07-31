@@ -1,7 +1,4 @@
 # SPDX-License-Identifier: GPL-2.0
-#CONFIG_RTL8723CS = m
-#export CONFIG_RTL8723CS
-#obj-$(CONFIG_RTL8723CS) += rtl8723cs/
 
 CONFIG_AP6XXX = m
 export CONFIG_AP6XXX
