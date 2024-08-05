@@ -11046,7 +11046,7 @@ static int
 wl_cfgvendor_cellavoid_set_cell_channels(struct wiphy *wiphy,
 	struct wireless_dev *wdev, const void  *data, int len)
 {
-	return WIFI_ERROR_NOT_SUPPORTED;
+	return BCME_OK;
 }
 #endif /* WL_CELLULAR_CHAN_AVOID */
 
