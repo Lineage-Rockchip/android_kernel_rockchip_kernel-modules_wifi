@@ -667,7 +667,7 @@ module_param(dhd_pkt_filter_init, uint, 0);
 #ifdef GAN_LITE_NAT_KEEPALIVE_FILTER
 uint dhd_master_mode = FALSE;
 #else
-uint dhd_master_mode = FALSE;
+uint dhd_master_mode = TRUE;
 #endif /* GAN_LITE_NAT_KEEPALIVE_FILTER */
 module_param(dhd_master_mode, uint, 0);
 
