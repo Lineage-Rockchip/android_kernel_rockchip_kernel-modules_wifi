@@ -620,12 +620,6 @@ extern int exynos_pcie_pm_resume(int ch_num);
 #endif /* CONFIG_MACH_UNIVERSAL5433 */
 #endif /* USE_EXYNOS_PCIE_RC_PMPATCH */
 
-#ifdef CONFIG_ARCH_TEGRA
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0))
-extern int tegra_pcie_pm_suspend(void);
-extern int tegra_pcie_pm_resume(void);
-#endif // endif
-#endif /* CONFIG_ARCH_TEGRA */
 
 extern int dhd_buzzz_dump_dngl(dhd_bus_t *bus);
 #ifdef IDLE_TX_FLOW_MGMT

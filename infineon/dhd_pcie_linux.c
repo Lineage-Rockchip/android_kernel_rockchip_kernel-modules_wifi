@@ -1087,11 +1087,6 @@ static int dhdpcie_resume_host_dev(dhd_bus_t *bus)
 #ifdef CONFIG_ARCH_MSM
 	bcmerror = dhdpcie_start_host_pcieclock(bus);
 #endif /* CONFIG_ARCH_MSM */
-#ifdef CONFIG_ARCH_TEGRA
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0))
-	bcmerror = tegra_pcie_pm_resume();
-#endif // endif
-#endif /* CONFIG_ARCH_TEGRA */
 	if (bcmerror < 0) {
 		DHD_ERROR(("%s: PCIe RC resume failed!!! (%d)\n",
 			__FUNCTION__, bcmerror));
@@ -1121,11 +1116,6 @@ static int dhdpcie_suspend_host_dev(dhd_bus_t *bus)
 #ifdef CONFIG_ARCH_MSM
 	bcmerror = dhdpcie_stop_host_pcieclock(bus);
 #endif	/* CONFIG_ARCH_MSM */
-#ifdef CONFIG_ARCH_TEGRA
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0))
-	bcmerror = tegra_pcie_pm_suspend();
-#endif // endif
-#endif /* CONFIG_ARCH_TEGRA */
 	return bcmerror;
 }
 
