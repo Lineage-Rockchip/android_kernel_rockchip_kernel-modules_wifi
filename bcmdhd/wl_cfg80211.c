@@ -1465,6 +1465,33 @@ static const u32 __wl_cipher_suites[] = {
 #endif /* WL_GCMP */
 };
 
+static const u32 __wl_cipher_legacy_suites[] = {
+	WLAN_CIPHER_SUITE_WEP40,
+	WLAN_CIPHER_SUITE_WEP104,
+	WLAN_CIPHER_SUITE_TKIP,
+	WLAN_CIPHER_SUITE_CCMP,
+#ifdef MFP
+	/*
+	 * Advertising AES_CMAC cipher suite to userspace would imply that we
+	 * are supporting MFP. So advertise only when MFP support is enabled.
+	 */
+	WLAN_CIPHER_SUITE_AES_CMAC,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0))
+	WLAN_CIPHER_SUITE_BIP_GMAC_256,
+	WLAN_CIPHER_SUITE_BIP_GMAC_128,
+	WLAN_CIPHER_SUITE_BIP_CMAC_256,
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0) */
+#endif /* MFP */
+
+#ifdef BCMWAPI_WPI
+	WLAN_CIPHER_SUITE_SMS4,
+#endif
+
+#if defined(WLAN_CIPHER_SUITE_PMK)
+	WLAN_CIPHER_SUITE_PMK,
+#endif /* WLAN_CIPHER_SUITE_PMK */
+};
+
 #ifdef WL_SUPPORT_ACS
 /*
  * The firmware code required for this feature to work is currently under
@@ -13191,8 +13218,13 @@ static s32 wl_setup_wiphy(struct wireless_dev *wdev, struct device *sdiofunc_dev
 	wdev->wiphy->bands[IEEE80211_BAND_2GHZ] = &__wl_band_2ghz;
 
 	wdev->wiphy->signal_type = CFG80211_SIGNAL_TYPE_MBM;
-	wdev->wiphy->cipher_suites = __wl_cipher_suites;
-	wdev->wiphy->n_cipher_suites = ARRAY_SIZE(__wl_cipher_suites);
+	if (dhd_conf_legacy_chip_check(dhd)) {
+		wdev->wiphy->cipher_suites = __wl_cipher_legacy_suites;
+		wdev->wiphy->n_cipher_suites = ARRAY_SIZE(__wl_cipher_legacy_suites);
+	} else {
+		wdev->wiphy->cipher_suites = __wl_cipher_suites;
+		wdev->wiphy->n_cipher_suites = ARRAY_SIZE(__wl_cipher_suites);
+	}
 	wdev->wiphy->max_remain_on_channel_duration = 5000;
 	wdev->wiphy->mgmt_stypes = wl_cfg80211_default_mgmt_stypes;
 #ifndef WL_POWERSAVE_DISABLED
@@ -16286,7 +16318,7 @@ wl_bss_roaming_done(struct bcm_cfg80211 *cfg, struct net_device *ndev,
 	DHD_STATLOG_CTRL(dhdp, ST(REASSOC_INFORM),
 		dhd_net2idx(dhdp->info, ndev), 0);
 #ifdef WL_EXT_IAPSTA
-	wl_ext_in4way_sync(ndev, STA_REASSOC_RETRY, WL_EXT_STATUS_ROAMED, NULL);
+	wl_ext_in4way_sync(ndev, STA_REASSOC_RETRY, WL_EXT_STATUS_ROAMED, &cur_chanspec);
 #endif
 
 #if (defined(CONFIG_ARCH_MSM) && defined(CFG80211_ROAMED_API_UNIFIED)) || \
@@ -16964,11 +16996,23 @@ wl_notify_rx_mgmt_frame(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 
 	/* Handle different versions of Rx frame data */
 	if (ntoh16(rxframe->version) == BCM_RX_FRAME_DATA_VERSION_1) {
+		if (ntoh32(e->datalen) < sizeof(wl_event_rx_frame_data_v1_t)) {
+			 WL_ERR(("wrong datalen:%d for rxframe v1:%zu\n",
+					 ntoh32(e->datalen), sizeof(wl_event_rx_frame_data_v1_t)));
+			 return -EINVAL;
+		}
 		mgmt_frame_len = ntoh32(e->datalen) - (uint32)sizeof(wl_event_rx_frame_data_v1_t);
 		rx_event_data = (u8 *) ((wl_event_rx_frame_data_v1_t *)rxframe + 1);
+		chspec = ntoh16(((wl_event_rx_frame_data_v1_t*)rxframe)->channel);
 	} else if (ntoh16(rxframe->version) == BCM_RX_FRAME_DATA_VERSION_2) {
+		if (ntoh32(e->datalen) < sizeof(wl_event_rx_frame_data_v2_t)) {
+			 WL_ERR(("wrong datalen:%d for rxframe v2:%zu\n",
+					 ntoh32(e->datalen), sizeof(wl_event_rx_frame_data_v2_t)));
+			 return -EINVAL;
+		}
 		mgmt_frame_len = ntoh32(e->datalen) - (uint32)sizeof(wl_event_rx_frame_data_v2_t);
 		rx_event_data = (u8 *) ((wl_event_rx_frame_data_v2_t *)rxframe + 1);
+		chspec = ntoh16(((wl_event_rx_frame_data_v2_t *)rxframe)->channel);
 	} else {
 		WL_ERR(("version mismatch for rx_frame_data, received = %d \n",
 		        ntoh16(rxframe->version)));
@@ -16977,7 +17021,6 @@ wl_notify_rx_mgmt_frame(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 
 	event = ntoh32(e->event_type);
 	bsscfgidx = e->bsscfgidx;
-	chspec = ntoh16(rxframe->channel);
 	bzero(&bssid, ETHER_ADDR_LEN);
 	ndev = cfgdev_to_wlc_ndev(cfgdev, cfg);
 
@@ -17008,6 +17051,7 @@ wl_notify_rx_mgmt_frame(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 #else
 	freq = wl_channel_to_frequency(wf_chspec_ctlchan(chspec), CHSPEC_BAND(chspec));
 #endif
+
 	if (event == WLC_E_ACTION_FRAME_RX) {
 		{
 			u8 ioctl_buf[WLC_IOCTL_SMLEN];
@@ -17310,7 +17354,7 @@ wl_notify_rx_mgmt_frame(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 		} else
 			return 0;
 	} else {
-		mgmt_frame = (u8 *)((wl_event_rx_frame_data_t *)rxframe + 1);
+		mgmt_frame = rx_event_data;
 
 		/* wpa supplicant use probe request event for restarting another GON Req.
 		 * but it makes GON Req repetition.
@@ -17327,7 +17371,7 @@ wl_notify_rx_mgmt_frame(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 				ETHER_ADDR_LEN)) {
 				if (cfg->afx_hdl->pending_tx_act_frm &&
 					wl_get_drv_status_all(cfg, FINDING_COMMON_CHANNEL)) {
-					chanspec_t channel = hton16(rxframe->channel);
+					chanspec_t channel = chspec;
 					WL_DBG(("PROBE REQUEST : Peer found, channel : %d\n",
 						channel));
 					cfg->afx_hdl->peer_chan = channel;
@@ -17356,7 +17400,7 @@ wl_notify_rx_mgmt_frame(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 	else
 		WL_DBG(("Rx Managment frame For Iface (%s) \n", ndev->name));
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 0))
-	 cfg80211_rx_mgmt(cfgdev, freq, 0,  mgmt_frame, mgmt_frame_len, 0);
+	cfg80211_rx_mgmt(cfgdev, freq, 0,  mgmt_frame, mgmt_frame_len, 0);
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 12, 0))
 	cfg80211_rx_mgmt(cfgdev, freq, 0,  mgmt_frame, mgmt_frame_len, 0, GFP_ATOMIC);
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 4, 0)) || \

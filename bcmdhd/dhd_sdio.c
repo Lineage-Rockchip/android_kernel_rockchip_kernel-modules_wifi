@@ -10259,6 +10259,7 @@ dhd_set_bus_params(struct dhd_bus *bus)
 	if (bus->dhd->conf->txglomsize >= 0) {
 		bus->txglomsize = bus->dhd->conf->txglomsize;
 	}
+	bus->idletime = dhd_idletime;
 #ifdef MINIME
 	if (bus->dhd->conf->fw_type == FW_TYPE_MINIME) {
 		bus->ramsize = bus->dhd->conf->ramsize;

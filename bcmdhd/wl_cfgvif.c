@@ -542,7 +542,9 @@ wl_cfg80211_get_iface_policy(struct net_device *ndev)
 wl_iftype_t
 wl_cfg80211_get_sec_iface(struct bcm_cfg80211 *cfg)
 {
+#ifndef P2P_AP_CONCURRENT
 	dhd_pub_t *dhd = (dhd_pub_t *)(cfg->pub);
+#endif
 	struct net_device *p2p_ndev = NULL;
 
 	p2p_ndev = wl_to_p2p_bss_ndev(cfg,
@@ -2233,6 +2235,11 @@ wl_get_mfp_capability(u8 rsn_cap, u32 *wpa_auth, u32 *mfp_val)
 	if (rsn_cap & RSN_CAP_MFPR) {
 		WL_DBG(("MFP Required \n"));
 		mfp = WL_MFP_REQUIRED;
+
+		/* This patch will make IE mismatch in 4-way M3 when the hostapd configured to
+		 * wpa_key_mgmt=WPA-PSK-SHA256 and ieee80211w=2, so remove it.
+		 */
+#if 0
 		/* Our firmware has requirement that WPA2_AUTH_PSK/WPA2_AUTH_UNSPECIFIED
 		 * be set, if SHA256 OUI is to be included in the rsn ie.
 		 */
@@ -2241,6 +2248,7 @@ wl_get_mfp_capability(u8 rsn_cap, u32 *wpa_auth, u32 *mfp_val)
 		} else if (*wpa_auth & WPA2_AUTH_1X_SHA256) {
 			*wpa_auth |= WPA2_AUTH_UNSPECIFIED;
 		}
+#endif
 	} else if (rsn_cap & RSN_CAP_MFPC) {
 		WL_DBG(("MFP Capable \n"));
 		mfp = WL_MFP_CAPABLE;
@@ -3953,7 +3961,7 @@ wl_cfg80211_set_ies(
 					VNDR_IE_CUSTOM_FLAG, interworking_ie->id,
 					interworking_ie->data,
 					interworking_ie->len)) != BCME_OK) {
-				WL_ERR(("Failed to add interworking IE"));
+				WL_ERR(("Failed to add interworking IE %d", err));
 			}
 		}
 	}
@@ -4300,18 +4308,25 @@ wl_cfg80211_start_ap(
  *      center frequencies present in 'preset_chandef' instead of using the
  *      hardcoded values in 'wl_cfg80211_set_channel()'.
  */
+#ifdef CFG80211_INFO_CHANDEF
+	if (!info->chandef.chan)
+#else
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)) && !defined(WL_COMPAT_WIRELESS))
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 19, 2) || defined(CFG80211_BKPORT_MLO)
 	if (!dev->ieee80211_ptr->u.ap.preset_chandef.chan)
 #else
 	if (!dev->ieee80211_ptr->preset_chandef.chan)
 #endif /* LINUX_VER >= 5.19.2 || CFG80211_BKPORT_MLO */
+#endif
 	{
 		WL_ERR(("chan is NULL\n"));
 		err = -EINVAL;
 		goto fail;
 	}
 	if ((err = wl_cfg80211_set_channel(wiphy, dev,
+#ifdef CFG80211_INFO_CHANDEF
+			info->chandef.chan,
+#else
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 19, 2) || defined(CFG80211_BKPORT_MLO)
 			dev->ieee80211_ptr->u.ap.preset_chandef.chan,
 #else
@@ -4322,7 +4337,7 @@ wl_cfg80211_start_ap(
 		goto fail;
 	}
 #endif /* ((LINUX_VERSION >= VERSION(3, 6, 0) && !WL_COMPAT_WIRELESS) */
-
+#endif
 	if ((err = wl_cfg80211_bcn_set_params(info, dev,
 		dev_role, bssidx)) < 0) {
 		WL_ERR(("Beacon params set failed \n"));

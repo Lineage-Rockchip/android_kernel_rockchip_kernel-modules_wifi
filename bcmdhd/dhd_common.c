@@ -6238,11 +6238,27 @@ wl_process_host_event(dhd_pub_t *dhd_pub, int *ifidx, void *pktdata, uint pktlen
 				dhd_wlfc_interface_event(dhd_pub,
 					eWLFC_MAC_ENTRY_ACTION_UPDATE,
 					ifevent->ifidx, ifevent->role, ea);
-			else
+			else {
+#if defined(__linux__)
+				/* Early set interface "del_in_progress" to prevent from packets
+				 * flooding to interface which is going to be removed. That would
+				 * cause proptx transit_count not consistent and has entry suppressed issue.
+				 */
+				if (ifevent->opcode == WLC_E_IF_DEL) {
+					unsigned long fl;
+					ifp = dhd_get_ifp(dhd_pub, ifevent->ifidx);
+					if (ifp) {
+						DHD_GENERAL_LOCK(dhd_pub, fl);
+						ifp->del_in_progress = true;
+						DHD_GENERAL_UNLOCK(dhd_pub, fl);
+					}
+				}
+#endif /* __linux__ */
 				dhd_wlfc_interface_event(dhd_pub,
 					((ifevent->opcode == WLC_E_IF_ADD) ?
 					eWLFC_MAC_ENTRY_ACTION_ADD : eWLFC_MAC_ENTRY_ACTION_DEL),
 					ifevent->ifidx, ifevent->role, ea);
+			}
 
 			/* dhd already has created an interface by default, for 0 */
 			if (ifevent->ifidx == 0)
@@ -6411,6 +6427,31 @@ wl_process_host_event(dhd_pub_t *dhd_pub, int *ifidx, void *pktdata, uint pktlen
 			dhd_flow_rings_delete(dhd_pub, (uint8)dhd_ifname2idx(dhd_pub->info,
 				event->ifname));
 		}
+#else
+#ifdef PROP_TXSTATUS
+		/* Link down */
+		if (!flags) {
+			struct wl_event_data_if *ifevent = (struct wl_event_data_if *)event_data;
+			uint8* ea = pvt_data->eth.ether_dhost;
+			WLFC_DBGMESG(("WLC_E_LINK: idx:%d, action:%s, "
+			              "iftype:%s, ["MACDBG"]\n",
+			              ifevent->ifidx,
+			              ((flags) ? "UP":"DOWN"),
+			              ((ifevent->role == 0) ? "STA":"AP "),
+			              MAC2STRDBG(ea)));
+			(void)ea;
+
+			/* only need to handle STA here */
+			if (!ifevent->role) {
+				dhd_wlfc_interface_event(dhd_pub,
+					eWLFC_MAC_ENTRY_ACTION_DEL,
+					ifevent->ifidx, ifevent->role, ea);
+				dhd_wlfc_interface_event(dhd_pub,
+					eWLFC_MAC_ENTRY_ACTION_ADD,
+					ifevent->ifidx, ifevent->role, ea);
+			}
+		}
+#endif /* PROP_TXSTATUS */
 #endif /* PCIE_FULL_DONGLE */
 		/* fall through */
 		fallthrough;
@@ -6453,6 +6494,7 @@ wl_process_host_event(dhd_pub_t *dhd_pub, int *ifidx, void *pktdata, uint pktlen
 		}
 #endif /* PCIE_FULL_DONGLE */
 #ifdef DHD_POST_EAPOL_M1_AFTER_ROAM_EVT
+		/* fall through */
 		ifp = dhd_get_ifp(dhd_pub, event->ifidx);
 		if (ifp) {
 			ifp->recv_reassoc_evt = FALSE;

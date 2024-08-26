@@ -2141,6 +2141,10 @@ dhdpcie_dongle_attach(dhd_bus_t *bus)
 	if (BCM4349_CHIP(chipid) || BCM4350_CHIP(chipid) || BCM4345_CHIP(chipid)) {
 		DHD_ERROR(("Disable CTO\n"));
 		bus->cto_enable = FALSE;
+	}
+	else if (dhd_conf_legacy_cto_chip(chipid)) {
+		DHD_ERROR(("Disable CTO for chip 0x%x\n", chipid));
+		bus->cto_enable = FALSE;
 	} else {
 		DHD_ERROR(("Enable CTO\n"));
 		bus->cto_enable = TRUE;
