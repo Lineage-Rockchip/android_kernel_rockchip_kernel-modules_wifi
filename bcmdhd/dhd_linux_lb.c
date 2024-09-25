@@ -1152,6 +1152,9 @@ dhd_napi_schedule(void *info)
 	DHD_GENERAL_UNLOCK(&dhd->pub, flags);
 #endif /* OEM_ANDROID */
 
+#if defined(CUSTOMER_HW_ROCKCHIP) && defined(CONFIG_ARCH_ROCKCHIP)
+	local_bh_disable();
+#endif
 	/* add napi_struct to softnet data poll list and raise NET_RX_SOFTIRQ */
 	if (napi_schedule_prep(&dhd->rx_napi_struct)) {
 
@@ -1172,7 +1175,9 @@ dhd_napi_schedule(void *info)
 		raise_softirq(NET_RX_SOFTIRQ);
 #endif /* WAKEUP_KSOFTIRQD_POST_NAPI_SCHEDULE */
 	}
-
+#if defined(CUSTOMER_HW_ROCKCHIP) && defined(CONFIG_ARCH_ROCKCHIP)
+	local_bh_enable();
+#endif
 	/*
 	 * If the rx_napi_struct was already running, then we let it complete
 	 * processing all its packets. The rx_napi_struct may only run on one
