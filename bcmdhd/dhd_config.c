@@ -3190,12 +3190,6 @@ dhd_conf_set_suspend_resume(dhd_pub_t *dhd, int suspend)
 		if (insuspend & NO_TXDATA_IN_SUSPEND) {
 			dhd_txflowcontrol(dhd, ALL_INTERFACES, ON);
 		}
-#if defined(WL_CFG80211) || defined(WL_ESCAN)
-		if (insuspend & (NO_EVENT_IN_SUSPEND|NO_TXCTL_IN_SUSPEND|WOWL_IN_SUSPEND)) {
-			if (conf->suspend_mode == PM_NOTIFIER)
-				wl_ext_user_sync(dhd, 0, TRUE);
-		}
-#endif
 		if (insuspend & ROAM_OFFLOAD_IN_SUSPEND)
 			dhd_conf_enable_roam_offload(dhd, 2);
 #ifdef SUSPEND_EVENT
@@ -3214,9 +3208,21 @@ dhd_conf_set_suspend_resume(dhd_pub_t *dhd, int suspend)
 #endif /* WL_EXT_IAPSTA */
 		dhd_conf_set_wl_cmd(dhd, conf->wl_suspend, FALSE);
 		dhd_conf_suspend_resume_bus(dhd, suspend);
+#if defined(WL_CFG80211) || defined(WL_ESCAN)
+		if (insuspend & (NO_EVENT_IN_SUSPEND|NO_TXCTL_IN_SUSPEND|WOWL_IN_SUSPEND)) {
+			if (conf->suspend_mode == PM_NOTIFIER)
+				wl_ext_user_sync(dhd, 0, TRUE);
+		}
+#endif
 		conf->suspended = TRUE;
 	}
 	else {
+#if defined(WL_CFG80211) || defined(WL_ESCAN)
+		if (insuspend & (NO_EVENT_IN_SUSPEND|NO_TXCTL_IN_SUSPEND|WOWL_IN_SUSPEND)) {
+			if (conf->suspend_mode == PM_NOTIFIER)
+				wl_ext_user_sync(dhd, 0, FALSE);
+		}
+#endif
 		dhd_conf_suspend_resume_bus(dhd, suspend);
 #ifdef SUSPEND_EVENT
 		if (insuspend & NO_EVENT_IN_SUSPEND) {
@@ -3235,12 +3241,6 @@ dhd_conf_set_suspend_resume(dhd_pub_t *dhd, int suspend)
 			dhd_conf_suspend_resume_ap(dhd, 0, suspend);
 		}
 #endif /* WL_EXT_IAPSTA */
-#if defined(WL_CFG80211) || defined(WL_ESCAN)
-		if (insuspend & (NO_EVENT_IN_SUSPEND|NO_TXCTL_IN_SUSPEND|WOWL_IN_SUSPEND)) {
-			if (conf->suspend_mode == PM_NOTIFIER)
-				wl_ext_user_sync(dhd, 0, FALSE);
-		}
-#endif
 		if (insuspend & NO_TXDATA_IN_SUSPEND) {
 			dhd_txflowcontrol(dhd, ALL_INTERFACES, OFF);
 		}

@@ -68,7 +68,7 @@
 #elif (defined (BCMDBG_ASSERT) && !defined (BCMDBG_ASSERT_DISABLED))
 #define EPI_VERSION_STR		"101.10.591.68 (ASSRT)"
 #else
-#define EPI_VERSION_STR		"101.10.591.68.32 (20240823-1)"
+#define EPI_VERSION_STR		"101.10.591.68.32 (20241021-1)"
 #endif /* BCMINTERNAL */
 
 #endif /* _epivers_h_ */
