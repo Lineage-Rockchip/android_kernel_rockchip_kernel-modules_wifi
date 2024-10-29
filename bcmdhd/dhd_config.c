@@ -878,6 +878,9 @@ dhd_conf_set_clm_name_by_chip(dhd_pub_t *dhd, char *clm_path)
 		CONFIG_MSG("clm path is null\n");
 		return;
 	}
+#ifndef FW_PATH_AUTO_SELECT
+	return;
+#endif
 
 	/* find out the last '/' */
 	i = strlen(clm_path);
@@ -1080,7 +1083,6 @@ dhd_conf_set_tput_patch(dhd_pub_t *dhd)
 #if defined(SET_RPS_CPUS)
 		conf->rps_cpus = TRUE;
 #endif /* SET_RPS_CPUS */
-		conf->orphan_move = 3;
 		conf->flow_ring_queue_threshold = 2048;
 #endif /* BCMPCIE */
 #ifdef DHDTCPACK_SUPPRESS
@@ -1108,11 +1110,6 @@ dhd_conf_set_tput_patch(dhd_pub_t *dhd)
 #if defined(SET_RPS_CPUS)
 		conf->rps_cpus = FALSE;
 #endif /* SET_RPS_CPUS */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0))
-		conf->orphan_move = 1;
-#else
-		conf->orphan_move = 0;
-#endif
 		conf->flow_ring_queue_threshold = 2048;
 #endif /* BCMPCIE */
 #ifdef DHDTCPACK_SUPPRESS
@@ -1130,7 +1127,6 @@ dhd_conf_dump_tput_patch(dhd_pub_t *dhd)
 	CONFIG_TRACE("tput_patch=%d\n", conf->tput_patch);
 	CONFIG_TRACE("mtu=%d\n", conf->mtu);
 	CONFIG_TRACE("pktsetsum=%d\n", conf->pktsetsum);
-	CONFIG_TRACE("orphan_move=%d\n", conf->orphan_move);
 #ifdef DHDTCPACK_SUPPRESS
 	CONFIG_TRACE("tcpack_sup_ratio=%d\n", conf->tcpack_sup_ratio);
 	CONFIG_TRACE("tcpack_sup_delay=%d\n", conf->tcpack_sup_delay);
@@ -1218,6 +1214,10 @@ dhd_conf_add_filepath(dhd_pub_t *dhd, char *pFilename)
 }
 #endif /* DHD_REQUEST_FW_PATH */
 
+#ifdef CUSTOMER_HW_ROCKCHIP
+#define RK_FW_PATH "/vendor/etc/firmware"
+#endif
+
 void
 dhd_conf_set_path_params(dhd_pub_t *dhd, char *fw_path, char *nv_path)
 {
@@ -1257,10 +1257,17 @@ dhd_conf_set_path_params(dhd_pub_t *dhd, char *fw_path, char *nv_path)
 	dhd_conf_add_filepath(dhd, dhd->conf_path);
 #endif
 
+#ifdef CUSTOMER_HW_ROCKCHIP
+	CONFIG_MSG("Final fw_path=%s%s\n", RK_FW_PATH, fw_path);
+	CONFIG_MSG("Final nv_path=%s%s\n", RK_FW_PATH, nv_path);
+	CONFIG_MSG("Final clm_path=%s%s\n", RK_FW_PATH, dhd->clm_path);
+	CONFIG_MSG("Final conf_path=%s%s\n", RK_FW_PATH, dhd->conf_path);
+#else
 	CONFIG_MSG("Final fw_path=%s\n", fw_path);
 	CONFIG_MSG("Final nv_path=%s\n", nv_path);
 	CONFIG_MSG("Final clm_path=%s\n", dhd->clm_path);
 	CONFIG_MSG("Final conf_path=%s\n", dhd->conf_path);
+#endif
 
 	dhd_conf_read_config(dhd, dhd->conf_path);
 #ifdef DHD_TPUT_PATCH
@@ -2397,6 +2404,7 @@ dhd_conf_add_pkt_filter(dhd_pub_t *dhd)
 	dhd->pktfilter_count += i;
 
 	if (dhd->conf->magic_pkt_filter_add) {
+		memset(magic, 0, sizeof(magic));
 		strncpy(magic, dhd->conf->magic_pkt_filter_add, dhd->conf->magic_pkt_hdr_len);
 		memset(dhd->conf->magic_pkt_filter_add, 0, MAGIC_PKT_FILTER_LEN);
 		strcpy(dhd->conf->magic_pkt_filter_add, magic);
@@ -4490,14 +4498,6 @@ dhd_conf_read_others(dhd_pub_t *dhd, char *full_param, uint len_param)
 		CONFIG_MSG("dhd_rxbound = %d\n", dhd_rxbound);
 	}
 #endif
-	else if (!strncmp("orphan_move=", full_param, len_param)) {
-		conf->orphan_move = (int)simple_strtol(data, NULL, 10);
-		CONFIG_MSG("orphan_move = %d\n", conf->orphan_move);
-	}
-	else if (!strncmp("tsq=", full_param, len_param)) {
-		conf->tsq = (int)simple_strtol(data, NULL, 10);
-		CONFIG_MSG("tsq = %d\n", conf->tsq);
-	}
 	else if (!strncmp("ctrl_resched=", full_param, len_param)) {
 		conf->ctrl_resched = (int)simple_strtol(data, NULL, 10);
 		CONFIG_MSG("ctrl_resched = %d\n", conf->ctrl_resched);
@@ -4916,9 +4916,11 @@ dhd_conf_set_ampdu_mpdu(dhd_pub_t *dhd)
 	int val = -1;
 
 	if (chip == BCM43430_CHIP_ID || chip == BCM4345_CHIP_ID ||
-			chip == BCM4359_CHIP_ID || chip == BCM43012_CHIP_ID) {
+			chip == BCM4359_CHIP_ID || chip == BCM43012_CHIP_ID ||
+			chip == BCM4382_CHIP_ID) {
 		val = 16;
-	} else if (chip == BCM43752_CHIP_ID || chip == BCM43756_CHIP_ID) {
+	} else if (chip == BCM43752_CHIP_ID || chip == BCM43756_CHIP_ID ||
+			chip == BCM4381_CHIP_ID) {
 		val = 32;
 	}
 
@@ -4994,11 +4996,6 @@ dhd_conf_tput_improve(dhd_pub_t *dhd)
 		conf->dhd_txminmax = -1;
 		conf->txinrx_thres = 128;
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0))
-		conf->orphan_move = 1;
-#else
-		conf->orphan_move = 0;
-#endif
 	}
 }
 
@@ -5037,7 +5034,9 @@ dhd_conf_preinit_ioctls_sta(dhd_pub_t *dhd, int ifidx)
 #ifdef WL_CFG80211
 	struct net_device *net = dhd_idx2net(dhd, ifidx);
 	struct bcm_cfg80211 *cfg = wl_get_cfg(net);
+#ifdef WL_SCHED_SCAN
 	struct wireless_dev *wdev = cfg->wdev;
+#endif /* WL_SCHED_SCAN */
 #endif /* defined(WL_CFG80211) */
 
 	dhd_conf_set_intiovar(dhd, ifidx, WLC_SET_VAR, "bcn_timeout", conf->bcn_timeout, 0, FALSE);
@@ -5081,7 +5080,6 @@ void
 dhd_conf_postinit_ioctls(dhd_pub_t *dhd)
 {
 	struct dhd_conf *conf = dhd->conf;
-	char wl_preinit[] = "";
 #ifdef NO_POWER_SAVE
 	char wl_no_power_save[] = "mpc=0, 86=0";
 	dhd_conf_set_wl_cmd(dhd, wl_no_power_save, FALSE);
@@ -5122,7 +5120,6 @@ dhd_conf_postinit_ioctls(dhd_pub_t *dhd)
 		conf->frameburst, 0, FALSE);
 
 	dhd_conf_preinit_ioctls_sta(dhd, 0);
-	dhd_conf_set_wl_cmd(dhd, wl_preinit, TRUE);
 #if defined(BCMSDIO)
 	dhd_conf_set_ampdu_mpdu(dhd);
 #endif
@@ -5379,12 +5376,6 @@ dhd_conf_preinit(dhd_pub_t *dhd)
 #ifdef IDHCP
 	conf->dhcpc_enable = -1;
 	conf->dhcpd_enable = -1;
-#endif
-	conf->orphan_move = 0;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0))
-	conf->tsq = 10;
-#else
-	conf->tsq = 0;
 #endif
 #ifdef DHDTCPACK_SUPPRESS
 #ifdef BCMPCIE

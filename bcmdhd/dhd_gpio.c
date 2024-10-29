@@ -20,11 +20,6 @@ extern void *dhd_wlan_mem_prealloc(uint bus_type, int index,
 extern void *dhd_wlan_mem_prealloc(int section, unsigned long size);
 #endif
 #endif /* CONFIG_DHD_USE_STATIC_BUF */
-#ifdef CUSTOMER_HW_ROCKCHIP
-#ifdef BCMPCIE
-//extern void rk_pcie_power_on_atu_fixup(void);
-#endif
-#endif
 
 #ifdef BCMDHD_DTS
 /* This is sample code in dts file.
@@ -37,6 +32,10 @@ bcmdhd_wlan {
 #define DHD_DT_COMPAT_ENTRY		"android,bcmdhd_wlan"
 #define GPIO_WL_REG_ON_PROPNAME		"gpio_wl_reg_on"
 #define GPIO_WL_HOST_WAKE_PROPNAME	"gpio_wl_host_wake"
+#endif
+
+#if defined(BCMPCIE) && defined(PCIE_ATU_FIXUP)
+extern void pcie_power_on_atu_fixup(void);
 #endif
 
 static int
@@ -56,9 +55,10 @@ dhd_wlan_set_power(int on, wifi_adapter_info_t *adapter)
 		}
 #ifdef CUSTOMER_HW_ROCKCHIP
 		rockchip_wifi_power(1);
-#ifdef BCMPCIE
-//		rk_pcie_power_on_atu_fixup();
 #endif
+#if defined(BCMPCIE) && defined(PCIE_ATU_FIXUP)
+		mdelay(100);
+		pcie_power_on_atu_fixup();
 #endif
 #ifdef BUS_POWER_RESTORE
 #ifdef BCMPCIE
@@ -303,6 +303,20 @@ dhd_wlan_init_gpio(wifi_adapter_info_t *adapter)
 				__FUNCTION__, gpio_wl_reg_on, err);
 			gpio_wl_reg_on = -1;
 		}
+#if defined(BCMPCIE) && defined(PCIE_ATU_FIXUP)
+		printf("======== PULL WL_REG_ON(%d) HIGH! ========\n", gpio_wl_reg_on);
+#ifdef CUSTOMER_HW_ROCKCHIP
+		rockchip_wifi_power(1);
+#endif
+		err = gpio_direction_output(gpio_wl_reg_on, 1);
+		if (err) {
+			printf("%s: WL_REG_ON didn't output high\n", __FUNCTION__);
+			gpio_wl_reg_on = -1;
+		} else {
+			OSL_SLEEP(WIFI_TURNON_DELAY);
+		}
+		pcie_power_on_atu_fixup();
+#endif
 	}
 	adapter->gpio_wl_reg_on = gpio_wl_reg_on;
 
