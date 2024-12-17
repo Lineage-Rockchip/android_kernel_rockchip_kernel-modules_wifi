@@ -2000,8 +2000,13 @@ int rtw_mp_get_tsside(struct net_device *dev,
 			pextra = pout_str_buf;
 			while ((token = strsep (&pextra,".")) != NULL) {
 				tmp[idx] = token;
+                              #if defined(__LP64__)
 				RTW_INFO("%s() token %d = %s strlen =%ld\n", __func__,
 					idx, tmp[idx], strlen(tmp[idx]));
+                              #else
+                                RTW_INFO("%s() token %d = %s strlen =%d\n", __func__,
+                                        idx, tmp[idx], strlen(tmp[idx]));
+                              #endif
 				idx++;
 			}
 
@@ -2036,8 +2041,13 @@ int rtw_mp_get_tsside(struct net_device *dev,
 			pextra = tgr_str_buf;
 			while ((token = strsep (&pextra,".")) != NULL) {
 				tmp[idx] = token;
+                              #if defined(__LP64__)
 				RTW_INFO("%s() token %d = %s strlen =%ld\n", __func__,
 					idx, tmp[idx], strlen(tmp[idx]));
+                              #else
+                                RTW_INFO("%s() token %d = %s strlen =%d\n", __func__,
+                                        idx, tmp[idx], strlen(tmp[idx]));
+                              #endif
 				idx++;
 			}
 

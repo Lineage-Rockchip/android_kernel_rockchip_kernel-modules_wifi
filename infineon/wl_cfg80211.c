@@ -24853,7 +24853,11 @@ s32 wl_cfg80211_get_p2p_dev_addr(struct net_device *net, struct ether_addr *p2pd
 	if (!p2p_is_on(cfg)) {
 		get_primary_mac(cfg, &primary_mac);
 		wl_cfgp2p_generate_bss_mac(cfg, &primary_mac);
-		memcpy((void *)&p2pdev_addr, (void *)&primary_mac, ETHER_ADDR_LEN);
+              #if defined(__LP64__)
+                memcpy((void *)&p2pdev_addr, (void *)&primary_mac, ETHER_ADDR_LEN);
+              #else
+		memcpy(/*(void *)&p2pdev_addr*/p2pdev_addr->octet, (void *)&primary_mac, ETHER_ADDR_LEN);
+              #endif
 	} else {
 		memcpy(p2pdev_addr->octet, wl_to_p2p_bss_macaddr(cfg, P2PAPI_BSSCFG_DEVICE).octet,
 			ETHER_ADDR_LEN);
