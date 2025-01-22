@@ -25657,7 +25657,7 @@ wl_cfg80211_sup_event_handler(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgde
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0)) || defined(ANDROID_GKI_UPDATE) || \
 	((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)) && defined(CUSTOMER_HW4)) || \
 	((ANDROID_VERSION == 13) && (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 123))) || \
-	((ANDROID_VERSION >= 14) && (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 109)))
+	((ANDROID_VERSION >= 14 || ANDROID_VERSION == 9) && (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 109)))
 		cfg80211_port_authorized(ndev, (const u8 *)curbssid, NULL, 0, GFP_KERNEL);
 #else
 		cfg80211_port_authorized(ndev, (const u8 *)curbssid, GFP_KERNEL);
