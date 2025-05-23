@@ -119,9 +119,6 @@ int log_print_threshold = 0;
 #endif /* DHD_LOG_PRINT_RATE_LIMIT */
 uint dhd_msg_level = DHD_ERROR_VAL | DHD_FWLOG_VAL | DHD_EVENT_VAL
 	/* For CUSTOMER_HW4 do not enable DHD_IOVAR_MEM_VAL by default */
-#if !defined(BOARD_HIKEY)
-	| DHD_IOVAR_MEM_VAL
-#endif // endif
 #ifndef OEM_ANDROID
 	| DHD_MSGTRACE_VAL
 #endif /* OEM_ANDROID */
