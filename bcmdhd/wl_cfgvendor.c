@@ -10454,6 +10454,7 @@ fail:
 }
 #endif /* APF */
 
+#ifdef SYNA_ANDROID_HAL
 static int wl_cfgvendor_configure_indoor_state(struct wiphy *wiphy,
 	struct wireless_dev *wdev, const void  *data, int len)
 {
@@ -10483,6 +10484,7 @@ static int wl_cfgvendor_configure_indoor_state(struct wiphy *wiphy,
 exit:
 	return ret;
 }
+#endif /* SYNA_ANDROID_HAL */
 
 #ifdef NDO_CONFIG_SUPPORT
 static int wl_cfgvendor_configure_nd_offload(struct wiphy *wiphy,
@@ -12575,7 +12577,9 @@ const struct nla_policy andr_wifi_attr_policy[ANDR_WIFI_ATTRIBUTE_MAX] = {
 	[ANDR_WIFI_ATTRIBUTE_THERMAL_COMPLETION_WINDOW] = { .type = NLA_U32 },
 	[ANDR_WIFI_ATTRIBUTE_VOIP_MODE] = { .type = NLA_U32, .len = sizeof(uint32) },
 	[ANDR_WIFI_ATTRIBUTE_DTIM_MULTIPLIER] = { .type = NLA_U32, .len = sizeof(uint32) },
+#ifdef SYNA_ANDROID_HAL
 	[ANDR_WIFI_ATTRIBUTE_INDOOR_STATE] = { .type = NLA_U8 },
+#endif
 };
 
 const struct nla_policy dump_buf_policy[DUMP_BUF_ATTR_MAX] = {
@@ -14047,6 +14051,7 @@ static struct wiphy_vendor_command wl_vendor_cmds [] = {
 		.maxattr = MULTISTA_ATTRIBUTE_MAX
 #endif /* LINUX_VERSION >= 5.3 */
 	},
+#ifdef SYNA_ANDROID_HAL
 	{
 		{
 			.vendor_id = OUI_GOOGLE,
@@ -14059,6 +14064,7 @@ static struct wiphy_vendor_command wl_vendor_cmds [] = {
 		.maxattr = ANDR_WIFI_ATTRIBUTE_MAX
 #endif /* LINUX_VERSION >= 5.3 */
 	},
+#endif /* SYNA_ANDROID_HAL */
 #if !defined(WL_TWT) && defined(WL_TWT_HAL_IF)
 	{
 		{
