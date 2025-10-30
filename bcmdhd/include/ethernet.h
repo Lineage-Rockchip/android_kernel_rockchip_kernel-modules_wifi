@@ -1,7 +1,7 @@
 /*
  * From FreeBSD 2.2.7: Fundamental constants relating to ethernet.
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -102,7 +102,7 @@
 #define ETHER_TYPE_WAI		0x88b4		/* WAI */
 #define ETHER_TYPE_89_0D	0x890d		/* 89-0d frame for TDLS */
 #define ETHER_TYPE_RRB		ETHER_TYPE_89_0D  /* RRB 802.11r 2008 */
-#define ETHER_TYPE_1905_1	0x893a      /* IEEE 1905.1 MCDU */
+#define ETHER_TYPE_BRCM_AIRIQ	0x88b7		/* Broadcom Corp.AiriQ */
 
 #define ETHER_TYPE_PPP_SES	0x8864		/* PPPoE Session */
 
@@ -218,9 +218,11 @@ do { \
 #else
 #define eacopy(s, d) \
 do { \
+	GCC_DIAGNOSTIC_PUSH_SUPPRESS_CAST(); \
 	((uint16 *)(d))[0] = ((const uint16 *)(s))[0]; \
 	((uint16 *)(d))[1] = ((const uint16 *)(s))[1]; \
 	((uint16 *)(d))[2] = ((const uint16 *)(s))[2]; \
+	GCC_DIAGNOSTIC_POP(); \
 } while (0)
 #endif /* DONGLEBUILD && __ARM_ARCH_7A__ */
 #endif /* BCMFUZZ */
@@ -230,18 +232,22 @@ do { \
 /* Copy an ethernet address in reverse order */
 #define	ether_rcopy(s, d) \
 do { \
+	GCC_DIAGNOSTIC_PUSH_SUPPRESS_CAST(); \
 	((uint16 *)(d))[2] = ((uint16 *)(s))[2]; \
 	((uint16 *)(d))[1] = ((uint16 *)(s))[1]; \
 	((uint16 *)(d))[0] = ((uint16 *)(s))[0]; \
+	GCC_DIAGNOSTIC_POP(); \
 } while (0)
 
 /* Copy 14B ethernet header: 32bit aligned source and destination. */
 #define ehcopy32(s, d) \
 do { \
+	GCC_DIAGNOSTIC_PUSH_SUPPRESS_CAST(); \
 	((uint32 *)(d))[0] = ((const uint32 *)(s))[0]; \
 	((uint32 *)(d))[1] = ((const uint32 *)(s))[1]; \
 	((uint32 *)(d))[2] = ((const uint32 *)(s))[2]; \
 	((uint16 *)(d))[6] = ((const uint16 *)(s))[6]; \
+	GCC_DIAGNOSTIC_POP(); \
 } while (0)
 
 /* Dongles use bcmutils functions instead of macros.

@@ -1,7 +1,7 @@
 /*
  * NVRAM variable manipulation
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -94,17 +94,21 @@ extern void nvram_exit(si_t *sih);
  * @param	name	name of variable to get
  * @return	value of variable or NULL if undefined
  */
-extern char * nvram_get(const char *name);
+#ifndef ATE_BUILD
+const
+#endif /* ATE_BUILD */
+char *nvram_get(const char *name);
 
 /*
  * Get the value of an NVRAM variable.
  * @param	name	name of variable to get
  * @return	value of variable or NUL if undefined
  */
-static INLINE char *
+static INLINE
+const char *
 nvram_safe_get(const char *name)
 {
-	char *p = nvram_get(name);
+	const char *p = nvram_get(name);
 	return p ? p : "";
 }
 
@@ -148,7 +152,7 @@ extern int nvram_getall(char *nvram_buf, int count);
  * returns the crc value of the nvram
  * @param	nvh	nvram header pointer
  */
-uint8 nvram_calc_crc(struct nvram_header * nvh);
+uint8 nvram_calc_crc(struct nvram_header *nvh);
 
 extern void nvram_printall(void);
 

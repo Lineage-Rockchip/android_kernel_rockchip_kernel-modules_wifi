@@ -1,7 +1,7 @@
 /*
  * DHD Linux platform header file
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -37,9 +37,7 @@
  * modifications of the software.
  *
  *
- * <<Broadcom-WL-IPTag/Open:>>
- *
- * $Id$
+ * <<Broadcom-WL-IPTag/Dual:>>
  */
 
 #ifndef __DHD_PLAT_H__
@@ -48,14 +46,15 @@
 #if defined(__linux__)
 
 #include <linuxver.h>
+#include <dhd_linux.h>
 
 #if !defined(CONFIG_WIFI_CONTROL_FUNC)
 #define WLAN_PLAT_NODFS_FLAG	0x01
 #define WLAN_PLAT_AP_FLAG	0x02
 struct wifi_platform_data {
-	int (*set_power)(int val, wifi_adapter_info_t *adapter);
+	int (*set_power)(wifi_adapter_info_t *adapter, int val);
 	int (*set_reset)(int val);
-	int (*set_carddetect)(int val);
+	int (*set_carddetect)(wifi_adapter_info_t *adapter, int val);
 #ifdef DHD_COREDUMP
 	int (*set_coredump)(const char *buf, int buf_len, const char *info);
 #endif /* DHD_COREDUMP */
@@ -64,7 +63,7 @@ struct wifi_platform_data {
 #else
 	void *(*mem_prealloc)(int section, unsigned long size);
 #endif
-	int (*get_mac_addr)(unsigned char *buf, int ifidx);
+	int (*get_mac_addr)(wifi_adapter_info_t *adapter, unsigned char *buf, int ifidx);
 #ifdef DHD_USE_HOST_WAKE
 	int (*get_wake_irq)(void);
 	int (*get_oob_gpio_level)(void);
@@ -105,6 +104,13 @@ extern int dhd_plat_pcie_suspend(void *plat_info);
 extern int dhd_plat_pcie_resume(void *plat_info);
 extern void dhd_plat_pcie_register_dump(void *plat_info);
 extern void dhd_plat_pin_dbg_show(void *plat_info);
+extern void dhd_plat_get_rc_port_dev_details(void *plat_info, void *ep_pdev);
+extern void dhd_plat_bus_post_init_quirks(void *plat_info, void *dhd_bus);
+extern void dhd_plat_tx_pktcount(void *plat_info, uint cnt);
+extern void dhd_plat_rx_pktcount(void *plat_info, uint cnt);
+
+extern int dhd_plat_pcie_suspend_nosave(void *plat_info);
+extern int dhd_plat_pcie_savestate(void *plat_info);
 
 extern uint32 dhd_plat_get_info_size(void);
 extern void dhd_plat_l1ss_ctrl(bool ctrl);
@@ -118,6 +124,22 @@ extern void dhd_plat_l1_exit(void);
 extern uint32 dhd_plat_get_rc_vendor_id(void);
 extern uint32 dhd_plat_get_rc_device_id(void);
 
+extern int dhd_plat_check_pcie_state(void);
+extern void dhd_plat_check_msi(void);
+
 extern uint16 dhd_plat_align_rxbuf_size(uint16 rxbufpost_sz);
+extern void dhd_plat_pcie_skip_config_set(bool val);
+extern bool dhd_plat_pcie_enable_big_core(void);
+int dhd_plat_get_wlan_reg_on_gpio(void);
+#ifdef DHD_COREDUMP
+void dhd_plat_register_coredump(void);
+void dhd_plat_unregister_coredump(void);
+#endif /* DHD_COREDUMP */
+extern void dhd_plat_pcie_dump_debug(void);
+
+#ifdef CONFIG_BCMDHD_DAL
+#include "google_plat.h"
+#endif /* CONFIG_BCMDHD_DAL */
+
 #endif /* __linux__ */
 #endif /* __DHD_PLAT_H__ */

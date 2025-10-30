@@ -1,7 +1,7 @@
 /*
  * Linux Error codes
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -128,12 +128,20 @@ static int16 linuxbcmerrormap[] = {
 	-EINVAL,		/* BCME_NOP */
 	-EINVAL,		/* BCME_6GCH_EPERM */
 	-EINVAL,		/* BCME_6G_NO_TPE */
+	-EINVAL,		/* BCME_PLL_RCCAL_FAIL */
+	-EINVAL,		/* BCME_BT_RCCAL_FAIL */
+	-EINVAL,		/* BCME_PHYMUTE */
+	-EINVAL,		/* BCME_ECC_REJECT */
+	-EINVAL,		/* BCME_OTP_PROG_LOCK */
+	-EINVAL,		/* BCME_RETRY */
+	-EINVAL,		/* BCME_NOTINFRASTA */
+	-EINVAL,		/* BCME_BADSCANCHAN */
 
 /* When an new error code is added to bcmutils.h, add os
  * specific error translation here as well
  */
 /* check if BCME_LAST changed since the last time this function was updated */
-#if BCME_LAST != BCME_6G_NO_TPE
+#if BCME_LAST != BCME_BADSCANCHAN
 #error "You need to add a OS error translation in the linuxbcmerrormap \
 	for new error code defined in bcmutils.h"
 #endif

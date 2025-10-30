@@ -1,7 +1,7 @@
 /*
  * WAPI specific types and constants relating to 802.11
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -59,7 +59,7 @@
 #define WAPI_OUI_LEN		DOT11_OUI_LEN	/* WAPI OUI length */
 
 #define WAPI_CIPHER_NONE	WPA_CIPHER_NONE
-#define WAPI_CIPHER_SMS4	11
+#define WAPI_CIPHER_SMS4	11 /* may overlap WPA_CIPHER_BIP_GMAC_128? */
 
 #define WAPI_CSE_WPI_SMS4	1
 

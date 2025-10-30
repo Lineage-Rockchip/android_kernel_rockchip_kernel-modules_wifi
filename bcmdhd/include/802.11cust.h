@@ -1,7 +1,7 @@
 /*
  * Customer specific types and constants relating to 802.11
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -52,11 +52,6 @@
 
 /* Action frame type for vendor specific action frames */
 #define	VS_AF_TYPE	221
-
-#ifdef IBSS_RMC
-/* customer's OUI */
-#define RMC_PROP_OUI		"\x00\x16\x32"
-#endif
 
 /* WFA definitions for LEGACY P2P */
 

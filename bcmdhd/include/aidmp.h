@@ -1,7 +1,7 @@
 /*
  * Broadcom AMBA Interconnect definitions.
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -126,6 +126,9 @@
 #define	SD_SZ_MASK		0xfffff000u
 #define	SD_SG32			0x00000008u
 #define	SD_SZ_ALIGN		0x00000fffu
+
+/* 0:Booker 1:IDM 1-0xf:Reserved */
+#define ID_NODETYPE_MASK	0x00000007u
 
 #define WRAPPER_TIMEOUT_CONFIG	0x4u
 
@@ -381,9 +384,13 @@ typedef volatile struct _aidmp {
 #define	AIRC_RESET		1
 
 /* errlogctrl */
-#define AIELC_TO_EXP_MASK	0x0000001f0		/* backplane timeout exponent */
-#define AIELC_TO_EXP_SHIFT	4
-#define AIELC_TO_ENAB_SHIFT	9			/* backplane timeout enable */
+#define AIELC_TO_EXP_MASK	0x0000001f0u		/* backplane timeout exponent */
+#define AIELC_TO_EXP_SHIFT	4u
+#define AIELC_TO_ENAB_SHIFT	9u			/* backplane timeout enable */
+#define AIELC_TO_INT_SHIFT	3u
+#define AIELC_TO_INT_MASK	(0x1u << AIELC_TO_INT_SHIFT)
+#define AIELC_BUSERR_INT_SHIFT	1u
+#define AIELC_BUSERR_INT_MASK	(0x1u << AIELC_BUSERR_INT_SHIFT)
 
 /* errlogdone */
 #define AIELD_ERRDONE_MASK	0x3
@@ -405,6 +412,9 @@ typedef volatile struct _aidmp {
 #define AXI_WRAP_STS_WRAP_RD_ERR	(1<<4)
 #define AXI_WRAP_STS_SET_CORE_FAIL	(1<<5)
 #define AXI_WRAP_STS_MULTIPLE_ERRORS	(1<<6)
+
+/* The upper 16bit represent the non secure access error codes */
+#define AXI_WRAP_STS_NONSECURE_SHIFT	(16u)
 
 /* errlogFrags */
 #define AXI_ERRLOG_FLAGS_WRITE_REQ	(1<<24)

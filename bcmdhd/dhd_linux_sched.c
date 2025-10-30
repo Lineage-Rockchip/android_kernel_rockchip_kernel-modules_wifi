@@ -1,7 +1,7 @@
 /*
  * Expose some of the kernel scheduler routines
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -37,37 +37,34 @@
  * modifications of the software.
  *
  *
- * <<Broadcom-WL-IPTag/Open:>>
- *
- * $Id$
+ * <<Broadcom-WL-IPTag/Dual:>>
  */
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <typedefs.h>
 #include <linuxver.h>
+#include "dhd.h"
 
 int setScheduler(struct task_struct *p, int policy, struct sched_param *param)
 {
 	int rc = 0;
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0))
-	rc = sched_setscheduler(p, policy, param);
-#else
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 12))
 	switch (policy) {
-		case SCHED_FIFO:
-			sched_set_fifo(p);
-			break;
-		case SCHED_RR:
-			sched_set_fifo_low(p);
-			break;
-		case SCHED_NORMAL:
-		default:
-			sched_set_normal(p, PRIO_TO_NICE(param->sched_priority));
-			break;
+	case SCHED_FIFO:
+		sched_set_fifo(p);
+		break;
+	case SCHED_NORMAL:
+		sched_set_normal(p, param->sched_priority);
+		break;
+	default:
+		printk("%s: invalid policy:%d\n", __func__, policy);
+		rc = -1;
+		break;
 	}
-#endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)) */
-
+#else
+	rc = sched_setscheduler(p, policy, param);
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) */
 	return rc;
 }
 

@@ -8,7 +8,7 @@
  * BSSTRANS - BSS Management Transition
  * TIMBC - TIM Broadcast
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -27,7 +27,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -52,6 +52,11 @@
 
 #ifndef _TYPEDEFS_H_
 #include <typedefs.h>
+#endif
+
+/* Backwards compatibility for legacy branches. */
+#if !defined(BCM_EXTENSION)
+#define BCM_EXTENSION
 #endif
 
 /* This marks the start of a packed structure section. */
@@ -123,6 +128,8 @@ typedef struct dot11_bsstrans_req dot11_bsstrans_req_t;
 #define DOT11_BSSTRANS_REQMODE_DISASSOC_IMMINENT	0x04
 #define DOT11_BSSTRANS_REQMODE_BSS_TERM_INCL		0x08
 #define DOT11_BSSTRANS_REQMODE_ESS_DISASSOC_IMNT	0x10
+/* Draft P802.11be_D2.2.pdf */
+#define DOT11_BSSTRANS_REQMODE_LINK_REMOVAL_IMNT	0x20
 
 /** BSS Management transition response frame header */
 BWL_PRE_PACKED_STRUCT struct dot11_bsstrans_resp {
@@ -243,6 +250,7 @@ typedef struct dot11_timbc_resp dot11_timbc_resp_t;
 #define DOT11_TIMBC_RESP_LEN	3	/* Fixed length */
 
 /** TIM Broadcast frame header */
+BCM_EXTENSION	/* struct containing flexible array member is the last field. */
 BWL_PRE_PACKED_STRUCT struct dot11_timbc {
 	uint8 category;			/* category of action frame (11) */
 	uint8 action;			/* action: TIM (0) */
@@ -769,6 +777,7 @@ typedef union dot11_tclas_fc dot11_tclas_fc_t;
 #define DOT11_TCLAS_FC_MAX_LEN		254
 
 /** TCLAS element */
+BCM_EXTENSION	/* struct containing flexible array member is the last field. */
 BWL_PRE_PACKED_STRUCT struct dot11_tclas_ie {
 	uint8 id;				/* 14, DOT11_MNG_TCLAS_ID */
 	uint8 len;
@@ -797,6 +806,7 @@ typedef struct dot11_tclas_proc_ie dot11_tclas_proc_ie_t;
 #define DOT11_TSPEC_IE_LEN		57	/* Fixed length */
 
 /** TCLAS Mask element */
+BCM_EXTENSION	/* struct containing flexible array member is the last field. */
 BWL_PRE_PACKED_STRUCT struct dot11_tclas_mask_ie {
 	uint8 id;				/* DOT11_MNG_ID_EXT_ID (255) */
 	uint8 len;

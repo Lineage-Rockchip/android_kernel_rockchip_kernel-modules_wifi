@@ -1,7 +1,7 @@
 /*
  * Fundamental constants relating to ICMP Protocol
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -80,7 +80,7 @@
 BWL_PRE_PACKED_STRUCT struct icmp6_opt {
 	uint8	type;		/* Option identifier */
 	uint8	length;		/* Lenth including type and length */
-	uint8	data[0];	/* Variable length data */
+	uint8	data[];	/* Variable length data */
 } BWL_POST_PACKED_STRUCT;
 
 #define	ICMP6_OPT_TYPE_SRC_LINK_LAYER	1

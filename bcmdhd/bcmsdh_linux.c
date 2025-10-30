@@ -1,7 +1,7 @@
 /*
  * SDIO access interface for drivers - linux specific (pci only)
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -37,9 +37,7 @@
  * modifications of the software.
  *
  *
- * <<Broadcom-WL-IPTag/Open:>>
- *
- * $Id$
+ * <<Broadcom-WL-IPTag/Dual:>>
  */
 
 /**
@@ -66,6 +64,7 @@ extern void dhdsdio_isr(void * args);
 #include <linux/platform_data/gpio-odin.h>
 #endif /* defined(CONFIG_ARCH_ODIN) */
 #include <dhd_linux.h>
+#include <bcmsdbus.h>
 
 /* driver info, initialized when bcmsdh_register is called */
 static bcmsdh_driver_t drvinfo = {NULL, NULL, NULL, NULL};
@@ -256,26 +255,6 @@ int bcmsdh_set_get_wake(bcmsdh_info_t *bcmsdh, int flag)
 	ret = bcmsdh->pkt_wake;
 	bcmsdh->total_wake_count += flag;
 	bcmsdh->pkt_wake = flag;
-
-#if defined(OOB_INTR_ONLY)
-	spin_unlock_irqrestore(&bcmsdh_osinfo->oob_irq_spinlock, flags);
-#endif
-	return ret;
-}
-
-int bcmsdh_get_wake(bcmsdh_info_t *bcmsdh)
-{
-#if defined(OOB_INTR_ONLY)
-	bcmsdh_os_info_t *bcmsdh_osinfo = bcmsdh->os_cxt;
-	unsigned long flags;
-#endif
-	int ret;
-
-#if defined(OOB_INTR_ONLY)
-	spin_lock_irqsave(&bcmsdh_osinfo->oob_irq_spinlock, flags);
-#endif
-
-	ret = bcmsdh->pkt_wake;
 
 #if defined(OOB_INTR_ONLY)
 	spin_unlock_irqrestore(&bcmsdh_osinfo->oob_irq_spinlock, flags);
@@ -534,7 +513,7 @@ void bcmsdh_oob_intr_unregister(bcmsdh_info_t *bcmsdh)
 #endif /* defined(OOB_INTR_ONLY) || defined(BCMSPI_ANDROID) */
 
 /* Module parameters specific to each host-controller driver */
-/* XXX Need to move these to where they really belong! */
+/* Need to move these to where they really belong! */
 
 extern uint sd_msglevel;	/* Debug message level */
 module_param(sd_msglevel, uint, 0);

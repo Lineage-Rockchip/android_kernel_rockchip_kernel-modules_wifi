@@ -3,7 +3,7 @@
  * Contents are wifi-specific, used by any kernel or app-level
  * software that might want wifi things as it grows.
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -22,7 +22,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -42,15 +42,27 @@
  * <<Broadcom-WL-IPTag/Dual:>>
  */
 
+#if defined(__linux__) && !defined(BCMDRIVER)
+/* for 'uint' */
+#define USE_TYPEDEF_DEFAULTS
+#endif
+
 #include <typedefs.h>
+
+#if defined(__linux__)
+/* Windows builds don't like this header due to conflicts. */
+#include <bcmstdlib_s.h>
+#endif /* __linux__ */
 
 #ifdef BCMDRIVER
 #include <osl.h>
 #define strtoul(nptr, endptr, base) bcm_strtoul((nptr), (endptr), (base))
-#ifndef tolower
+#undef tolower
 #define tolower(c) (bcm_isupper((c)) ? ((c) + 'a' - 'A') : (c))
-#endif /* tolower */
 #else /* BCMDRIVER */
+#if defined(__linux__) && !defined(BCMFUZZ)
+#include <strings.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -59,6 +71,7 @@
 #define ASSERT(exp)
 #endif
 #endif /* BCMDRIVER */
+
 #include <bcmwifi_channels.h>
 
 #if defined(WIN32) && (defined(BCMDLL) || defined(WLMDLL) || defined(_CONSOLE))

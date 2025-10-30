@@ -131,7 +131,7 @@ CONFIG_RTW_MBO = n
 CONFIG_RTKM ?= n
 ########################## Android ###########################
 # CONFIG_RTW_ANDROID - 0: no Android, 4/5/6/7/8/9/10/11/12 : Android version
-CONFIG_RTW_ANDROID = 14
+CONFIG_RTW_ANDROID = 15
 
 ifeq ($(shell test $(CONFIG_RTW_ANDROID) -gt 0; echo $$?), 0)
 EXTRA_CFLAGS += -DCONFIG_RTW_ANDROID=$(CONFIG_RTW_ANDROID)

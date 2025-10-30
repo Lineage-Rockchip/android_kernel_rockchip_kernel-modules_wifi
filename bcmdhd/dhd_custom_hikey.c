@@ -1,7 +1,7 @@
 /*
  * Platform Dependent file for Hikey
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -37,9 +37,7 @@
  * modifications of the software.
  *
  *
- * <<Broadcom-WL-IPTag/Open:>>
- *
- * $Id$
+ * <<Broadcom-WL-IPTag/Dual:>>
  *
  */
 
@@ -53,6 +51,7 @@
 #include <linux/fcntl.h>
 #include <linux/fs.h>
 #include <linux/of_gpio.h>
+#include <linux/skbuff.h>
 #ifdef CONFIG_WIFI_CONTROL_FUNC
 #include <linux/wlan_plat.h>
 #else
@@ -60,12 +59,6 @@
 #endif /* CONFIG_WIFI_CONTROL_FUNC */
 #include <dhd_dbg.h>
 #include <dhd.h>
-
-#ifdef CONFIG_BROADCOM_WIFI_RESERVED_MEM
-extern void dhd_exit_wlan_mem(void);
-extern int dhd_init_wlan_mem(void);
-extern void *dhd_wlan_mem_prealloc(int section, unsigned long size);
-#endif /* CONFIG_BROADCOM_WIFI_RESERVED_MEM */
 
 #define HIKEY_PCIE_VENDOR_ID 0x19e5
 #define HIKEY_PCIE_DEVICE_ID 0x3660
@@ -114,6 +107,60 @@ extern int kirin_pcie_lp_ctrl(u32 enable) __attribute__ ((weak));
 /* For HIKEY SDIO card detect */
 extern int wifi_card_detect(void) __attribute__ ((weak));
 #endif /* BCMSDIO */
+
+#ifdef DHD_VALIDATE_PKT_ADDRESS
+/*
+ * Hikey iomem is like below
+ * 00000000-201fffff : System RAM
+ *   00080000-015affff : Kernel code
+ *   015b0000-0168ffff : reserved
+ *   01690000-0179bfff : Kernel data
+ * We are observing hikey is throwing UR for accesses
+ * in reserved/Kernel data range.
+ * Hence if any skb is falling <= 0179bfff, copy to new skb
+ * and free that skb.
+ */
+#define KERNEL_DATA_SECTION_END_ADDRESS	0x0179bfffUL
+
+void *
+dhd_validate_packet_address(dhd_pub_t *dhd, void *pkt)
+{
+	struct sk_buff *skb = (struct sk_buff *)pkt;
+	void *skbdata_pa;
+
+	if (skb == NULL) {
+		return NULL;
+	}
+
+	skbdata_pa = VIRT_TO_PHYS((void *)skb->data);
+	while ((ulong)skbdata_pa <= KERNEL_DATA_SECTION_END_ADDRESS) {
+		/*
+		 * if skb->data is in the reserved/data section,
+		 * copy it in new skb and free it.
+		 */
+		gfp_t flags = CAN_SLEEP() ? GFP_KERNEL : GFP_ATOMIC;
+		struct sk_buff *nskb = skb_copy(skb, flags);
+		DHD_LOG_MEM(("%s: enqueue skb %lx < %lx\n",
+			__FUNCTION__, (ulong)skbdata_pa, KERNEL_DATA_SECTION_END_ADDRESS));
+		dhd_enqueue_inv_address_queue(dhd, skb);
+
+		if (nskb == NULL) {
+			DHD_LOG_MEM(("%s: skb_copy failed\n", __FUNCTION__));
+			return NULL;
+		}
+
+		skb = nskb;
+
+		/*
+		 * if copied new skb->data is in the reserved/data section,
+		 * free it and return NULL
+		 */
+		skbdata_pa = VIRT_TO_PHYS((void *)skb->data);
+		dhd->badaddr_pkt_cnt++;
+	}
+	return (void *)skb;
+}
+#endif /* DHD_VALIDATE_PKT_ADDRESS */
 
 void
 dhd_wifi_deinit_gpio(void)
@@ -172,25 +219,24 @@ dhd_wifi_init_gpio(void)
 			__FUNCTION__, WIFI_WL_REG_ON_PROPNAME, wlan_reg_on));
 	} else {
 		/* ========== WLAN_PWR_EN ============ */
-		DHD_INFO(("%s: gpio_wlan_power('%s'): %d\n",
-			__FUNCTION__, WIFI_WL_REG_ON_PROPNAME, wlan_reg_on));
+		DHD_INFO(("%s: gpio_wlan_power : %d\n", __FUNCTION__, wlan_reg_on));
 
 		/*
 		 * For reg_on, gpio_request will fail if the gpio is configured to output-high
 		 * in the dts using gpio-hog, so do not return error for failure.
 		 */
-		if (gpio_request_one(wlan_reg_on, GPIOF_OUT_INIT_HIGH, DHD_GPIO_REGON_NAME)) {
+		if (gpio_request_one(wlan_reg_on, GPIOF_DIR_OUT, "WL_REG_ON")) {
 			DHD_ERROR(("%s: Failed to request gpio %d for WL_REG_ON, "
-			"might have configured in the dts\n",
-			__FUNCTION__, wlan_reg_on));
+				"might have configured in the dts\n",
+				__FUNCTION__, wlan_reg_on));
 		} else {
-			DHD_ERROR(("%s: gpio_request WL_REG_ON done - WLAN_EN: GPIO %d\n",
+			DHD_PRINT(("%s: gpio_request WL_REG_ON done - WLAN_EN: GPIO %d\n",
 				__FUNCTION__, wlan_reg_on));
 		}
 
-		gpio_reg_on_val = gpio_get_value_cansleep(wlan_reg_on);
-		DHD_ERROR(("%s: Initial WL_REG_ON: [%d]\n",
-			__FUNCTION__, gpio_reg_on_val));
+		gpio_reg_on_val = gpio_get_value(wlan_reg_on);
+		DHD_PRINT(("%s: Initial WL_REG_ON: [%d]\n",
+			__FUNCTION__, gpio_get_value(wlan_reg_on)));
 
 		if (gpio_reg_on_val == 0) {
 			DHD_INFO(("%s: WL_REG_ON is LOW, drive it HIGH\n", __FUNCTION__));
@@ -239,13 +285,14 @@ dhd_wifi_init_gpio(void)
 				__FUNCTION__, wlan_host_wake_up));
 			return -ENODEV;
 		} else {
-			DHD_ERROR(("%s: gpio_request WLAN_HOST_WAKE done"
+			DHD_PRINT(("%s: gpio_request WLAN_HOST_WAKE done"
 				" - WLAN_HOST_WAKE: GPIO %d\n",
 				__FUNCTION__, wlan_host_wake_up));
 		}
 
 		if (gpio_direction_input(wlan_host_wake_up)) {
-			DHD_ERROR(("%s: Failed to set WL_HOST_WAKE gpio direction\n", __func__));
+			DHD_ERROR(("%s: Failed to set WL_HOST_WAKE gpio direction\n",
+				__FUNCTION__));
 			return -EIO;
 		}
 
@@ -281,7 +328,7 @@ dhd_wlan_power(int onoff)
 			DHD_INFO(("WL_REG_ON on-step-2 : [%d]\n",
 				gpio_get_value_cansleep(wlan_reg_on)));
 		} else {
-			DHD_ERROR(("[%s] gpio value is 0. We need reinit.\n", __func__));
+			DHD_PRINT(("[%s] gpio value is 0. We need reinit.\n", __func__));
 			if (gpio_direction_output(wlan_reg_on, 1)) {
 				DHD_ERROR(("%s: WL_REG_ON is "
 					"failed to pull up\n", __func__));
@@ -483,6 +530,27 @@ uint32 dhd_plat_get_rc_vendor_id(void)
 uint32 dhd_plat_get_rc_device_id(void)
 {
 	return HIKEY_PCIE_DEVICE_ID;
+}
+
+#ifdef DHD_COREDUMP
+void
+dhd_plat_register_coredump(void)
+{
+	return;
+}
+
+void
+dhd_plat_unregister_coredump(void)
+{
+	return;
+}
+#endif /* DHD_COREDUMP */
+
+int
+dhd_plat_get_wlan_reg_on_gpio(void)
+{
+	return gpio_is_valid(wlan_reg_on) ?
+		gpio_get_value(wlan_reg_on) : -1;
 }
 
 #ifndef BCMDHD_MODULAR

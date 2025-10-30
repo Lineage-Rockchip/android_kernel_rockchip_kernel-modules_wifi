@@ -1,7 +1,7 @@
 /*
  * BCM43XX Sonics SiliconBackplane PCMCIA core hardware definitions.
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -130,9 +130,7 @@
 
 /* CIS stuff */
 
-/* The CIS stops where the FCRs start */
-#define	CIS_SIZE		PCMCIA_FCR
-#define CIS_SIZE_12K    1154    /* Maximum h/w + s/w sub region size for 12k OTP */
+#define	CIS_SIZE		2500u
 
 /* CIS tuple length field max */
 #define CIS_TUPLE_LEN_MAX	0xff
@@ -424,6 +422,29 @@
 #define HNBU_ACPA_6G_C0         0xad /* paparams for 6G Core0 */
 #define HNBU_ACPA_6G_C1         0xae /* paparams for 6G Core1 */
 #define HNBU_ACPA_6G_C2         0xaf /* paparams for 6G Core2 */
+
+#define HNBU_RSSI_DELTA_6G_B0	0xb0 /* RSSI Cal parameter for 6G channel group 0 */
+#define HNBU_RSSI_DELTA_6G_B1	0xb1 /* RSSI Cal parameter for 6G channel group 1 */
+#define HNBU_RSSI_DELTA_6G_B2	0xb2 /* RSSI Cal parameter for 6G channel group 2 */
+#define HNBU_RSSI_DELTA_6G_B3	0xb3 /* RSSI Cal parameter for 6G channel group 3 */
+#define HNBU_RSSI_DELTA_6G_B4	0xb4 /* RSSI Cal parameter for 6G channel group 4 */
+#define HNBU_RSSI_DELTA_6G_B5	0xb5 /* RSSI Cal parameter for 6G channel group 5 */
+
+#define HNBU_RSSI_DELTA_2G20_B0       0xb6 /* RSSI Cal parameter for 2G 20MHz channel group 0   */
+#define HNBU_RSSI_DELTA_2G20_B1       0xb7 /* RSSI Cal parameter for 2G 20MHz channel group 1   */
+#define HNBU_RSSI_DELTA_2G20_B2       0xb8 /* RSSI Cal parameter for 2G 20MHz channel group 2   */
+#define HNBU_RSSI_DELTA_2G20_B3       0xb9 /* RSSI Cal parameter for 2G 20MHz channel group 3   */
+#define HNBU_RSSI_DELTA_2G20_B4       0xba /* RSSI Cal parameter for 2G 20MHz channel group 4   */
+#define HNBU_RSSI_DELTA_5G20L         0xbb /* RSSI Cal parameter for 5G 20MHz low channel       */
+#define HNBU_RSSI_DELTA_5G20ML        0xbc /* RSSI Cal parameter for 5G 20MHz mid lower channel */
+#define HNBU_RSSI_DELTA_5G20MU        0xbd /* RSSI Cal parameter for 5G 20MHz mid upper channel */
+#define HNBU_RSSI_DELTA_5G20H         0xbe /* RSSI Cal parameter for 5G 20MHz high channel      */
+#define HNBU_RSSI_DELTA_6G20_B0       0xbf /* RSSI Cal parameter for 6G 20MHz channel group 0 */
+#define HNBU_RSSI_DELTA_6G20_B1       0xc0 /* RSSI Cal parameter for 6G 20MHz channel group 1 */
+#define HNBU_RSSI_DELTA_6G20_B2       0xc1 /* RSSI Cal parameter for 6G 20MHz channel group 2 */
+#define HNBU_RSSI_DELTA_6G20_B3       0xc2 /* RSSI Cal parameter for 6G 20MHz channel group 3 */
+#define HNBU_RSSI_DELTA_6G20_B4       0xc3 /* RSSI Cal parameter for 6G 20MHz channel group 4 */
+#define HNBU_RSSI_DELTA_6G20_B5       0xc4 /* RSSI Cal parameter for 6G 20MHz channel group 5 */
 
 /* sbtmstatelow */
 #define SBTML_INT_ACK		0x40000		/* ack the sb interrupt */

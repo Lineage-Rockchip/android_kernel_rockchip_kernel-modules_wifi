@@ -2,7 +2,7 @@
  * Broadcom Dongle Host Driver (DHD), Generic work queue framework
  * Generic interface to handle dhd deferred work events
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -21,7 +21,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -38,9 +38,7 @@
  * modifications of the software.
  *
  *
- * <<Broadcom-WL-IPTag/Open:>>
- *
- * $Id$
+ * <<Broadcom-WL-IPTag/Dual:>>
  */
 #ifndef _dhd_linux_wq_h_
 #define _dhd_linux_wq_h_
@@ -66,12 +64,12 @@ enum _wq_event {
 	DHD_WQ_WORK_GET_BIGDATA_AP,
 	DHD_WQ_WORK_SOC_RAM_DUMP,
 	DHD_WQ_WORK_SOC_RAM_COLLECT,
+#ifdef DHD_ERPOM
+	DHD_WQ_WORK_ERROR_RECOVERY,
+#endif /* DHD_ERPOM */
 	DHD_WQ_WORK_H2D_CONSOLE_TIME_STAMP_MATCH,
 	DHD_WQ_WORK_AXI_ERROR_DUMP,
 	DHD_WQ_WORK_CTO_RECOVERY,
-#ifdef DHD_UPDATE_INTF_MAC
-	DHD_WQ_WORK_IF_UPDATE,
-#endif /* DHD_UPDATE_INTF_MAC */
 	DHD_WQ_WORK_AML_IOVAR,
 	DHD_WQ_WORK_NDEV_UPD_FEATURES,
 	DHD_MAX_WQ_EVENTS

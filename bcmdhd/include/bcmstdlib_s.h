@@ -1,7 +1,7 @@
 /*
  * Broadcom Secure Standard Library.
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -48,8 +48,14 @@
 	defined(__STDC_WANT_LIB_EXT1__))
 extern int memmove_s(void *dest, size_t destsz, const void *src, size_t n);
 extern int memcpy_s(void *dest, size_t destsz, const void *src, size_t n);
-extern int memset_s(void *dest, size_t destsz, int c, size_t n);
 #endif /* !__STDC_WANT_SECURE_LIB__ && !(__STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__) */
+#if (!defined(__STDC_WANT_SECURE_LIB__) && !(defined(__STDC_LIB_EXT1__) && \
+	defined(__STDC_WANT_LIB_EXT1__))) || (defined(__STDC_WANT_SECURE_LIB__) && \
+	defined(WIN32))
+extern int memset_s(void *dest, size_t destsz, int c, size_t n);
+#endif /* (!__STDC_WANT_SECURE_LIB__ && !(__STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__)) ||
+	  (__STDC_WANT_SECURE_LIB__ && WIN32)
+*/
 #if !defined(FREEBSD) && !defined(MACOSX) && !defined(BCM_USE_PLATFORM_STRLCPY)
 extern size_t strlcpy(char *dest, const char *src, size_t size);
 #endif /* !defined(FREEBSD) && !defined(MACOSX) && !defined(BCM_USE_PLATFORM_STRLCPY) */
@@ -62,12 +68,15 @@ extern size_t strlcat_s(char *dest, const char *src, size_t size);
  * This is only intended as a compile-time test, and should be used by compile-only targets.
  */
 #if defined(BCM_STDLIB_S_BUILTINS_TEST)
-#define memmove_s(dest, destsz, src, n) ((void)(destsz), (int)__builtin_memmove((dest), (src), (n)))
-#define memcpy_s(dest, destsz, src, n)  ((void)(destsz), (int)__builtin_memcpy((dest), (src), (n)))
-#define memset_s(dest, destsz, c, n)    ((void)(destsz), (int)__builtin_memset((dest), (c), (n)))
-#define strlcpy(dest, src, size)        ((void)(size), (size_t)__builtin_strcpy((dest), (src)))
-#define strlcat_s(dest, src, size)      ((void)(size), (size_t)__builtin_strcat((dest), (src)))
+#define memmove_s(dest, destsz, src, n) ((void)(destsz), \
+	(__builtin_memmove((dest), (src), (n)) ? BCME_OK : BCME_BADARG))
+#define memcpy_s(dest, destsz, src, n)  ((void)(destsz), \
+	(__builtin_memcpy((dest), (src), (n)) ? BCME_OK : BCME_BADARG))
+#define memset_s(dest, destsz, c, n)    ((void)(destsz), \
+	(__builtin_memset((dest), (c), (n)) ? BCME_OK : BCME_BADARG))
+#define strlcat_s(dest, src, size)      (__builtin_strcat((dest), (src)) ? size : 0)
 #endif /* BCM_STDLIB_S_BUILTINS_TEST */
 
 #endif /* !BWL_NO_INTERNAL_STDLIB_S_SUPPORT */
+
 #endif /* _bcmstdlib_s_h_ */

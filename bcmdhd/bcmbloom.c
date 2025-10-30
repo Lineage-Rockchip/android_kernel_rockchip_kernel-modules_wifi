@@ -1,7 +1,7 @@
 /*
  * Bloom filter support
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -40,13 +40,31 @@
  * <<Broadcom-WL-IPTag/Dual:>>
  */
 
+#if defined(__linux__) && !defined(BCMDRIVER)
+// for 'uint'
+#define USE_TYPEDEF_DEFAULTS
+#endif
+
 #include <typedefs.h>
 #include <bcmdefs.h>
+
+#if defined(__linux__)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+#include <linux/stdarg.h>
+#else
+#include <stdarg.h>
+#endif /* LINUX_VERSION_CODE */
+#else
+#include <stdarg.h>
+#endif /* CONFIG_BCMDHD && __linux__ */
 
 #ifdef BCMDRIVER
 #include <osl.h>
 #include <bcmutils.h>
 #else /* !BCMDRIVER */
+#if defined(__linux__) && !defined(BCMFUZZ)
+#include <strings.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -55,6 +73,7 @@
 #endif
 #endif /* !BCMDRIVER */
 #include <bcmutils.h>
+#include <bcmstdlib_s.h>
 
 #include <bcmbloom.h>
 
@@ -64,8 +83,8 @@ struct bcm_bloom_filter {
 	void *cb_ctx;
 	uint max_hash;
 	bcm_bloom_hash_t *hash;	/* array of hash functions */
-	uint filter_size; 		/* in bytes */
-	uint8 *filter; 			/* can be NULL for validate only */
+	uint filter_size;		/* in bytes */
+	uint8 *filter;			/* can be NULL for validate only */
 };
 
 /* public interface */
@@ -241,11 +260,11 @@ int bcm_bloom_get_filter_data(bcm_bloom_filter_t *bp,
 	if (buf_len)
 		*buf_len = bp->filter_size;
 
-	if (buf_size < bp->filter_size)
-		return BCME_BUFTOOSHORT;
-
-	if (bp->filter && bp->filter_size)
-		memcpy(buf, bp->filter, bp->filter_size);
+	if (bp->filter && bp->filter_size) {
+		if (memcpy_s(buf, buf_size, bp->filter, bp->filter_size)) {
+			return BCME_BUFTOOSHORT;
+		}
+	}
 
 	return BCME_OK;
 }

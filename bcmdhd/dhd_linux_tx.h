@@ -2,7 +2,7 @@
  * Broadcom Dongle Host Driver (DHD),
  * Linux-specific network interface for transmit(tx) path
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -21,7 +21,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -38,9 +38,8 @@
  * modifications of the software.
  *
  *
- * <<Broadcom-WL-IPTag/Open:>>
+ * <<Broadcom-WL-IPTag/Dual:>>
  *
- * $Id$
  */
 
 #ifndef _dhd_linux_tx_h_
@@ -65,4 +64,7 @@ void dhd_txcomplete(dhd_pub_t *dhdp, void *txp, bool success);
 void dhd_os_tx_completion_wake(dhd_pub_t *dhd);
 void dhd_os_sdlock_txq(dhd_pub_t *pub);
 void dhd_os_sdunlock_txq(dhd_pub_t *pub);
+#ifdef TX_CSO
+extern void dhd_fill_cso_info(dhd_pub_t *dhd, void *pktbuf, void *txdesc, uint32 item_len);
+#endif /* TX_CSO */
 #endif /* _dhd_linux_tx_h_ */

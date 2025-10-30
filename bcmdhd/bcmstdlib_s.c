@@ -1,7 +1,7 @@
 /*
  * Broadcom Secure Standard Library.
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -40,6 +40,14 @@
  * <<Broadcom-WL-IPTag/Dual:>>
  */
 
+// For strict C17 Posix 2008 target builds, enable bzero()
+#define _GNU_SOURCE 1
+
+#if defined(__linux__) && !defined(BCMDRIVER)
+// for 'uint'
+#define USE_TYPEDEF_DEFAULTS
+#endif
+
 #include <typedefs.h>
 #include <bcmdefs.h>
 #ifdef BCMDRIVER
@@ -48,6 +56,9 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+#if defined(__linux) && !defined(BCMFUZZ)
+#include <strings.h>
+#endif
 #endif /* else BCMDRIVER */
 
 #include <bcmstdlib_s.h>
@@ -78,7 +89,9 @@
 #endif /* __SIZE_MAX__ */
 #define SIZE_MAX __SIZE_MAX__
 #endif /* SIZE_MAX */
+#ifndef RSIZE_MAX
 #define RSIZE_MAX (SIZE_MAX >> 1u)
+#endif /* RSIZE_MAX */
 
 #if !defined(__STDC_WANT_SECURE_LIB__) && !(defined(__STDC_LIB_EXT1__) && \
 	defined(__STDC_WANT_LIB_EXT1__))
@@ -174,7 +187,11 @@ BCMPOSTTRAPFN(memcpy_s)(void *dest, size_t destsz, const void *src, size_t n)
 exit:
 	return err;
 }
+#endif /* !__STDC_WANT_SECURE_LIB__ && !(__STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__) */
 
+#if (!defined(__STDC_WANT_SECURE_LIB__) && !(defined(__STDC_LIB_EXT1__) && \
+	defined(__STDC_WANT_LIB_EXT1__))) || (defined(__STDC_WANT_SECURE_LIB__) && \
+	defined(WIN32))
 /*
  * memset_s - secure memset
  * dest : pointer to the object to be set
@@ -209,7 +226,10 @@ BCMPOSTTRAPFN(memset_s)(void *dest, size_t destsz, int c, size_t n)
 exit:
 	return err;
 }
-#endif /* !__STDC_WANT_SECURE_LIB__ && !(__STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__) */
+
+#endif /* (!__STDC_WANT_SECURE_LIB__ && !(__STDC_LIB_EXT1__ && __STDC_WANT_LIB_EXT1__)) ||
+	  (__STDC_WANT_SECURE_LIB__ && WIN32)
+*/
 
 #if !defined(FREEBSD) && !defined(MACOSX) && !defined(BCM_USE_PLATFORM_STRLCPY)
 /**
@@ -228,6 +248,17 @@ size_t BCMPOSTTRAPFN(strlcpy)(char *dest, const char *src, size_t size)
 {
 	size_t i;
 
+#ifdef __GNUC__
+#if __GNUC__ >= 9
+	/*
+	 * False Positives on testing dest==NULL and src==NULL below,
+	 * for some builds, depending on compiler version and strictness options.
+	 */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnonnull-compare"
+#endif /* __GNUC__ > 9 */
+#endif /* __GNUC__ */
+
 	if (dest == NULL || size == 0) {
 		return 0;
 	}
@@ -236,6 +267,12 @@ size_t BCMPOSTTRAPFN(strlcpy)(char *dest, const char *src, size_t size)
 		*dest = '\0';
 		return 0;
 	}
+
+#ifdef __GNUC__
+#if __GNUC__ >= 9
+#pragma GCC diagnostic pop
+#endif /* __GNUC__ > 9 */
+#endif /* __GNUC__ */
 
 	for (i = 0; i < size; i++) {
 		dest[i] = src[i];
@@ -305,7 +342,7 @@ strlcat_s(char *dest, const char *src, size_t size)
 		if (n != 0) {
 			/* copy relevant chars (until end of src buf or given size is reached) */
 			bytes_to_copy = MIN(slen - (size_t)(s - src), n - 1);
-			(void)memcpy(d, s, bytes_to_copy);
+			(void)memcpy_s(d, bytes_to_copy, s, bytes_to_copy);
 			d += bytes_to_copy;
 		}
 	}

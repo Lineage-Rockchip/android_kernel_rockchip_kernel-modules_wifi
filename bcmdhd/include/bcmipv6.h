@@ -1,7 +1,7 @@
 /*
  * Fundamental constants relating to Neighbor Discovery Protocol
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -92,8 +92,8 @@
 
 #define ICMPV6_ND_OPT_LEN_LINKADDR		1
 
-#define IPV6_VERSION 	6
-#define IPV6_HOP_LIMIT 	255
+#define IPV6_VERSION	6
+#define IPV6_HOP_LIMIT	255
 
 #define IPV6_ADDR_NULL(a)	((a[0] | a[1] | a[2] | a[3] | a[4] | \
 							 a[5] | a[6] | a[7] | a[8] | a[9] | \
@@ -134,7 +134,7 @@ BWL_PRE_PACKED_STRUCT struct ipv6_hdr {
 	uint8	flow_lbl[3];
 	uint16	payload_len;
 	uint8	nexthdr;
-	uint8 	hop_limit;
+	uint8	hop_limit;
 	struct	ipv6_addr	saddr;
 	struct	ipv6_addr	daddr;
 } BWL_POST_PACKED_STRUCT;

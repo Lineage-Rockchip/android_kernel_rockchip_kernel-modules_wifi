@@ -2,7 +2,7 @@
  *  BCMSDH interface glue
  *  implement bcmsdh API for SDIOH driver
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -21,7 +21,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -38,9 +38,7 @@
  * modifications of the software.
  *
  *
- * <<Broadcom-WL-IPTag/Open:>>
- *
- * $Id$
+ * <<Broadcom-WL-IPTag/Dual:>>
  */
 
 /**
@@ -81,10 +79,6 @@ static f3intr_handler processf3intr = NULL;
 static dhd_hang_notification process_dhd_hang_notification = NULL;
 static dhd_hang_state_t g_dhd_hang_state = NO_HANG_STATE;
 #endif /* defined (BT_OVER_SDIO) */
-
-#if defined(NDIS) && (NDISVER < 0x0630)
-extern SDIOH_API_RC sdioh_detach(osl_t *osh, sdioh_info_t *sd);
-#endif
 
 #if defined(OOB_INTR_ONLY) && defined(HW_OOB) || defined(FORCE_WOWLAN)
 extern int
@@ -214,10 +208,6 @@ bcmsdh_detach(osl_t *osh, void *sdh)
 	bcmsdh_info_t *bcmsdh = (bcmsdh_info_t *)sdh;
 
 	if (bcmsdh != NULL) {
-#if defined(NDIS) && (NDISVER < 0x0630)
-		if (bcmsdh->sdioh)
-			sdioh_detach(osh, bcmsdh->sdioh);
-#endif
 		MFREE(osh, bcmsdh, sizeof(bcmsdh_info_t));
 	}
 
@@ -254,17 +244,21 @@ bcmsdh_intr_enable(void *sdh)
 {
 	bcmsdh_info_t *bcmsdh = (bcmsdh_info_t *)sdh;
 	SDIOH_API_RC status;
+
 #ifdef BCMSPI_ANDROID
 	uint32 data;
 #endif /* BCMSPI_ANDROID */
+
 	ASSERT(bcmsdh);
 
 	status = sdioh_interrupt_set(bcmsdh->sdioh, TRUE);
+
 #ifdef BCMSPI_ANDROID
 	data = bcmsdh_cfg_read_word(sdh, 0, 4, NULL);
 	data |= 0xE0E70000;
 	bcmsdh_cfg_write_word(sdh, 0, 4, data, NULL);
 #endif /* BCMSPI_ANDROID */
+
 	return (SDIOH_API_SUCCESS(status) ? 0 : BCME_ERROR);
 }
 
@@ -273,17 +267,21 @@ bcmsdh_intr_disable(void *sdh)
 {
 	bcmsdh_info_t *bcmsdh = (bcmsdh_info_t *)sdh;
 	SDIOH_API_RC status;
+
 #ifdef BCMSPI_ANDROID
 	uint32 data;
 #endif /* BCMSPI_ANDROID */
+
 	ASSERT(bcmsdh);
 
 	status = sdioh_interrupt_set(bcmsdh->sdioh, FALSE);
+
 #ifdef BCMSPI_ANDROID
 	data = bcmsdh_cfg_read_word(sdh, 0, 4, NULL);
 	data &= ~0xE0E70000;
 	bcmsdh_cfg_write_word(sdh, 0, 4, data, NULL);
 #endif /* BCMSPI_ANDROID */
+
 	return (SDIOH_API_SUCCESS(status) ? 0 : BCME_ERROR);
 }
 
@@ -376,7 +374,7 @@ bcmsdh_cfg_read(void *sdh, uint fnc_num, uint32 addr, int *err)
 	            fnc_num, addr, data));
 
 	return data;
-}
+} EXPORT_SYMBOL(bcmsdh_cfg_read);
 
 void
 bcmsdh_cfg_write(void *sdh, uint fnc_num, uint32 addr, uint8 data, int *err)
@@ -406,7 +404,7 @@ bcmsdh_cfg_write(void *sdh, uint fnc_num, uint32 addr, uint8 data, int *err)
 
 	BCMSDH_INFO(("%s:fun = %d, addr = 0x%x, uint8data = 0x%x\n", __FUNCTION__,
 	            fnc_num, addr, data));
-}
+} EXPORT_SYMBOL(bcmsdh_cfg_write);
 
 uint32
 bcmsdh_cfg_read_word(void *sdh, uint fnc_num, uint32 addr, int *err)
@@ -558,10 +556,8 @@ bcmsdh_reg_read(void *sdh, uintptr addr, uint size)
 
 	ASSERT(bcmsdh->init_success);
 
-	if (bcmsdhsdio_set_sbaddr_window(bcmsdh, addr, bcmsdh->force_sbwad_calc)) {
-		bcmsdh->regfail = TRUE; // terence 20130621: prevent dhd_dpc in dead lock
+	if (bcmsdhsdio_set_sbaddr_window(bcmsdh, addr, bcmsdh->force_sbwad_calc))
 		return 0xFFFFFFFF;
-	}
 
 	addr &= SBSDIO_SB_OFT_ADDR_MASK;
 	if (size == 4)
@@ -575,7 +571,7 @@ bcmsdh_reg_read(void *sdh, uintptr addr, uint size)
 	BCMSDH_INFO(("uint32data = 0x%x\n", word));
 
 	/* if ok, return appropriately masked word */
-	/* XXX Masking was put in for NDIS port, remove if not needed */
+	/* Masking was put in for NDIS port, remove if not needed */
 	if (SDIOH_API_SUCCESS(status)) {
 		switch (size) {
 			case sizeof(uint8):
@@ -611,10 +607,8 @@ bcmsdh_reg_write(void *sdh, uintptr addr, uint size, uint32 data)
 
 	ASSERT(bcmsdh->init_success);
 
-	if ((err = bcmsdhsdio_set_sbaddr_window(bcmsdh, addr, bcmsdh->force_sbwad_calc))) {
-		bcmsdh->regfail = TRUE; // terence 20130621:
+	if ((err = bcmsdhsdio_set_sbaddr_window(bcmsdh, addr, bcmsdh->force_sbwad_calc)))
 		return err;
-	}
 
 	addr &= SBSDIO_SB_OFT_ADDR_MASK;
 	if (size == 4)
@@ -760,7 +754,7 @@ bcmsdh_stop(void *sdh)
 int
 bcmsdh_waitlockfree(void *sdh)
 {
-#ifdef LINUX
+#if defined(__linux__)
 	bcmsdh_info_t *bcmsdh = (bcmsdh_info_t *)sdh;
 
 	return sdioh_waitlockfree(bcmsdh->sdioh);
@@ -833,7 +827,7 @@ bcmsdh_reset(bcmsdh_info_t *sdh)
 	return sdioh_sdio_reset(bcmsdh->sdioh);
 }
 
-/* XXX For use by NDIS port, remove if not needed. */
+/* For use by NDIS port, remove if not needed. */
 void *bcmsdh_get_sdioh(bcmsdh_info_t *sdh)
 {
 	ASSERT(sdh);

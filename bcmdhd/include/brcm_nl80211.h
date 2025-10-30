@@ -1,7 +1,7 @@
 /*
  * Definitions for nl80211 vendor command/event access to host driver
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -44,7 +44,7 @@
 #ifndef _brcm_nl80211_h_
 #define _brcm_nl80211_h_
 
-//#ifdef OEM_ANDROID Need proper #ifdef in the referencing code as well
+// #ifdef OEM_ANDROID Need proper #ifdef in the referencing code as well
 #define OUI_BRCM  0x001018
 #define OUI_GOOGLE  0x001A11
 
@@ -87,7 +87,7 @@ struct nl_prv_data {
 	uint len;			/* ioctl return buffer length */
 	struct bcm_nlmsg_hdr *nlioc;	/* bcm_nlmsg_hdr header pointer */
 };
-//#endif /* OEM_ANDROID */
+// #endif /*  OEM_ANDROID */
 
 /* Keep common BCM netlink macros here */
 #define BCM_NL_USER	31

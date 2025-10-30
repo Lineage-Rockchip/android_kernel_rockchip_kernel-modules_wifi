@@ -6,7 +6,7 @@
  *
  * NOTE: A ring of size N, may only hold N-1 elements.
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -25,7 +25,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -43,6 +43,8 @@
  *
  *
  * <<Broadcom-WL-IPTag/Dual:>>
+ *
+ * Edited with the help of GENAI.
  */
 #ifndef __bcm_ring_included__
 #define __bcm_ring_included__
@@ -497,7 +499,7 @@ typedef struct bcm_workq bcm_workq_t;
 #define WORKQ_RING(workq)               (&((workq)->ring))
 #define WORKQ_PEER_RING(workq)          (&((workq)->peer->ring))
 
-#define WORKQ_ELEMENT(__elem_type, __workq, __index) ({ \
+#define WORKQ_ELEMENT(__elem_type, __workq, __index) BCM_EXTENSION ({ \
 	WORKQ_ASSERT((__workq) != BCM_WORKQ_NULL); \
 	WORKQ_ASSERT((__index) < ((__workq)->ring_size)); \
 	((__elem_type *)((__workq)->buffer)) + (__index); \

@@ -1,7 +1,7 @@
 /*
  * BCMSDH Function Driver for the native SDIO/MMC driver in the Linux Kernel
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -37,9 +37,7 @@
  * modifications of the software.
  *
  *
- * <<Broadcom-WL-IPTag/Open:>>
- *
- * $Id$
+ * <<Broadcom-WL-IPTag/Dual:>>
  */
 
 #include <typedefs.h>
@@ -59,6 +57,7 @@
 #include <bcmsdh_sdmmc.h>
 #include <dhd_dbg.h>
 #include <bcmdevs.h>
+#include <bcmdevs_legacy.h>
 
 #if !defined(SDIO_VENDOR_ID_BROADCOM)
 #define SDIO_VENDOR_ID_BROADCOM		0x02d0
@@ -73,9 +72,6 @@
 extern void wl_cfg80211_set_parent_dev(void *dev);
 extern void sdioh_sdmmc_devintr_off(sdioh_info_t *sd);
 extern void sdioh_sdmmc_devintr_on(sdioh_info_t *sd);
-extern void* bcmsdh_probe(osl_t *osh, void *dev, void *sdioh, void *adapter_info, uint bus_type,
-	uint bus_num, uint slot_num);
-extern int bcmsdh_remove(bcmsdh_info_t *bcmsdh);
 
 int sdio_function_init(void);
 void sdio_function_cleanup(void);
@@ -88,10 +84,6 @@ static int clockoverride = 0;
 
 module_param(clockoverride, int, 0644);
 MODULE_PARM_DESC(clockoverride, "SDIO card clock override");
-
-#ifdef GLOBAL_SDMMC_INSTANCE
-PBCMSDH_SDMMC_INSTANCE gInstance;
-#endif
 
 /* Maximum number of bcmsdh_sdmmc devices supported by driver */
 #define BCMSDH_SDMMC_MAX_DEVICES 1
@@ -108,8 +100,8 @@ static int sdioh_probe(struct sdio_func *func)
 	osl_t *osh = NULL;
 	sdioh_info_t *sdioh = NULL;
 
-	sd_err(("bus num (host idx)=%d, slot num (rca)=%d, caps=0x%x\n",
-		host_idx, rca, func->card->host->caps));
+	sd_err(("%s: bus num (host idx)=%d, slot num (rca)=%d, caps=0x%x\n",
+		__FUNCTION__, host_idx, rca, func->card->host->caps));
 	adapter = dhd_wifi_platform_get_adapter(SDIO_BUS, host_idx, rca);
 	if (adapter != NULL) {
 		sd_err(("found adapter info '%s'\n", adapter->name));
@@ -120,7 +112,7 @@ static int sdioh_probe(struct sdio_func *func)
 	} else {
 		sd_err(("can't find adapter info for this chip\n"));
 #ifdef ADAPTER_IDX
-		goto fail;
+		return -EBADSLT;
 #endif
 	}
 
@@ -142,11 +134,15 @@ static int sdioh_probe(struct sdio_func *func)
 	}
 	if (!(func->card->host->caps & MMC_CAP_NONREMOVABLE)) {
 		sd_err(("%s: MMC_CAP_NONREMOVABLE not enabled in SDIO driver\n", __FUNCTION__));
-//		func->card->host->caps |= MMC_CAP_NONREMOVABLE;
+#ifdef SDIO_DETECT_CHANGE
+		func->card->host->caps |= MMC_CAP_NONREMOVABLE;
+#endif /* SDIO_DETECT_CHANGE */
 	}
 	if ((func->card->host->caps & MMC_CAP_NEEDS_POLL)) {
 		sd_err(("%s: MMC_CAP_NEEDS_POLL enabled in SDIO driver\n", __FUNCTION__));
-//		func->card->host->caps &= ~MMC_CAP_NEEDS_POLL;
+#ifdef SDIO_DETECT_CHANGE
+		func->card->host->caps &= ~MMC_CAP_NEEDS_POLL;
+#endif /* SDIO_DETECT_CHANGE */
 	}
 	sdioh->bcmsdh = bcmsdh_probe(osh, &func->dev, sdioh, adapter, SDIO_BUS, host_idx, rca);
 	if (sdioh->bcmsdh == NULL) {
@@ -162,11 +158,20 @@ fail:
 		sdioh_detach(osh, sdioh);
 	if (osh != NULL)
 		osl_detach(osh);
+#ifdef SDIO_DETECT_CHANGE
+	func->card->host->caps &= ~MMC_CAP_NONREMOVABLE;
+	func->card->host->caps |= MMC_CAP_NEEDS_POLL;
+	mmc_detect_change(func->card->host, 0);
+#endif /* SDIO_DETECT_CHANGE */
 	return -ENOMEM;
 }
 
 static void sdioh_remove(struct sdio_func *func)
 {
+#ifdef SDIO_DETECT_CHANGE
+	int host_idx = func->card->host->index;
+	uint32 rca = func->card->rca;
+#endif /* SDIO_DETECT_CHANGE */
 	sdioh_info_t *sdioh;
 	osl_t *osh;
 
@@ -181,6 +186,13 @@ static void sdioh_remove(struct sdio_func *func)
 	bcmsdh_remove(sdioh->bcmsdh);
 	sdioh_detach(osh, sdioh);
 	osl_detach(osh);
+#ifdef SDIO_DETECT_CHANGE
+	sd_err(("%s: bus num (host idx)=%d, slot num (rca)=%d, caps=0x%x\n",
+		__FUNCTION__, host_idx, rca, func->card->host->caps));
+	func->card->host->caps &= ~MMC_CAP_NONREMOVABLE;
+	func->card->host->caps |= MMC_CAP_NEEDS_POLL;
+	mmc_detect_change(func->card->host, 0);
+#endif /* SDIO_DETECT_CHANGE */
 }
 
 static int bcmsdh_sdmmc_probe(struct sdio_func *func,
@@ -196,10 +208,6 @@ static int bcmsdh_sdmmc_probe(struct sdio_func *func,
 	sd_info(("sdio_vendor: 0x%04x\n", func->vendor));
 	sd_info(("sdio_device: 0x%04x\n", func->device));
 	sd_info(("Function#: 0x%04x\n", func->num));
-
-#ifdef GLOBAL_SDMMC_INSTANCE
-	gInstance->func[func->num] = func;
-#endif
 
 	/* 4318 doesn't have function 2 */
 	if ((func->num == 2) || (func->num == 1 && func->device == 0x4))
@@ -228,15 +236,14 @@ static void bcmsdh_sdmmc_remove(struct sdio_func *func)
 /* devices we support, null terminated */
 static const struct sdio_device_id bcmsdh_sdmmc_ids[] = {
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_BROADCOM, SDIO_DEVICE_ID_BROADCOM_DEFAULT) },
-	/* XXX This should not be in the external release, as it will attach to any SDIO
+	/* This should not be in the external release, as it will attach to any SDIO
 	 * device, even non-WLAN devices.
-	 * Need to add IDs for the FALCON-based chips and put this under BCMINTERNAL
+	 * Need to add IDs for the FALCON-based chips
 	 { SDIO_DEVICE_CLASS(SDIO_CLASS_NONE) },
 	 */
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_BROADCOM, BCM4362_CHIP_ID) },
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_BROADCOM, BCM43751_CHIP_ID) },
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_BROADCOM, BCM43752_CHIP_ID) },
-	{ SDIO_DEVICE(SDIO_VENDOR_ID_BROADCOM, BCM43756_CHIP_ID) },
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_BROADCOM, BCM43012_CHIP_ID) },
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_BROADCOM, BCM43014_CHIP_ID) },
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_BROADCOM, BCM43014_D11N_ID) },
@@ -249,7 +256,7 @@ static const struct sdio_device_id bcmsdh_sdmmc_ids[] = {
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_BROADCOM, SDIO_ANY_ID) },
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_BROADCOM, BCM4381_CHIP_ID) },
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_BROADCOM, BCM4382_CHIP_ID) },
-	{ SDIO_DEVICE(SDIO_VENDOR_ID_SYNAPTICS, BCM43711_CHIP_ID) },
+	{ SDIO_DEVICE(SDIO_VENDOR_ID_SYNAPTICS, SYNA43711_CHIP_ID) },
 	{ SDIO_DEVICE_CLASS(SDIO_CLASS_NONE)		},
 	{ 0, 0, 0, 0 /* end: all zeroes */
 	},
@@ -345,13 +352,13 @@ static void bcmsdh_sdmmc_complete(struct device *pdev)
 
 	printf("%s Enter func->num=%d\n", __FUNCTION__, func->num);
 	if (func->num != 2)
-		return ;
+		return;
 
 	sdioh = sdio_get_drvdata(func);
 	bcmsdh_complete(sdioh->bcmsdh);
 
 	printf("%s Exit\n", __FUNCTION__);
-	return ;
+	return;
 }
 #endif /* DEVICE_PM_CALLBACK */
 
@@ -419,7 +426,7 @@ void sdio_func_unreg_notify(void)
 static struct sdio_driver bcmsdh_sdmmc_driver = {
 	.probe		= bcmsdh_sdmmc_probe,
 	.remove		= bcmsdh_sdmmc_remove,
-	.name		= "bcmsdh_sdmmc",
+	.name		= "bcmsdh_sdmmc"ADAPTER_IDX_STR,
 	.id_table	= bcmsdh_sdmmc_ids,
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 39)) && defined(CONFIG_PM_SLEEP)
 	.drv = {

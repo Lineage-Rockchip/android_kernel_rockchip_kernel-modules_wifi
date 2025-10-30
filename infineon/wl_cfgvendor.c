@@ -6310,6 +6310,7 @@ static int wl_cfgvendor_lstats_get_info(struct wiphy *wiphy,
 	wifi_iface_stat iface;
 	wlc_rev_info_t revinfo;
 
+	WL_INFORM_MEM(("%s: Enter \n", __func__));
 	RETURN_EIO_IF_NOT_UP(cfg);
 
 	/* Get the device rev info */

@@ -1,7 +1,7 @@
 /*
  * DHD debugability: Status Information Logging support
  *
- * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2024, Broadcom.
+ * Copyright (C) 2025, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -37,12 +37,9 @@
  * modifications of the software.
  *
  *
- * <<Broadcom-WL-IPTag/Open:>>
- *
- * $Id$
+ * <<Broadcom-WL-IPTag/Dual:>>
  */
 
-#include <linuxver.h>
 #include <typedefs.h>
 #include <osl.h>
 #include <bcmutils.h>
@@ -51,6 +48,9 @@
 #include <dngl_stats.h>
 #include <dhd.h>
 #include <dhd_dbg.h>
+#if defined(__linux__)
+#include <linux/rtc.h>
+#endif /* __linux__ */
 
 #ifdef DHD_STATUS_LOGGING
 
@@ -699,7 +699,7 @@ dhd_statlog_get_timestamp(stat_elem_t *elem, uint64 *sec, uint64 *usec)
 static void
 dhd_statlog_convert_time(stat_elem_t *elem, uint8 *buf, uint32 buflen)
 {
-#if defined(LINUX) || defined(linux)
+#if defined(__linux__)
 	struct rtc_time tm;
 	uint64 ts_sec, rem_usec;
 
@@ -717,7 +717,7 @@ dhd_statlog_convert_time(stat_elem_t *elem, uint8 *buf, uint32 buflen)
 		tm.tm_year - 100, tm.tm_mon + 1, tm.tm_mday,
 		tm.tm_hour, tm.tm_min, tm.tm_sec,
 		(uint32)(rem_usec / USEC_PER_MSEC));
-#endif /* LINUX || linux */
+#endif /* __linux__ */
 }
 
 #ifdef DHD_LOG_DUMP
