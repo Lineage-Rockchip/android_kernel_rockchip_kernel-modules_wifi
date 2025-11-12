@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -18,7 +18,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2025, Broadcom.
+ * Copyright (C) 2024, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -134,8 +134,7 @@ typedef unsigned __int64 uint64;
 #define TYPEDEF_ULONG
 #endif
 
-#if defined(__linux__) && defined(__KERNEL__) && !(defined(EFI) || \
-	defined(WL_UNITTEST))
+#if defined(__linux__) && !defined(EFI)
 /*
  * If this is either a Linux hybrid build or the per-port code of a hybrid build
  * then use the Linux header files to get some of the typedefs.  Otherwise, define
@@ -163,8 +162,8 @@ typedef unsigned __int64 uint64;
 #endif	/* __KERNEL__ */
 #endif	/* linux && !EFI */
 
-#if !(defined(__linux__) || defined(_WIN32) || defined(_RTE_) || defined(__DJGPP__) || \
-	defined(__BOB__) || defined(EFI) || defined(COEX_CPU_BUILD) || defined(WL_UNITTEST))
+#if !defined(__linux__) && !defined(_WIN32) && !defined(_RTE_) && !defined(__DJGPP__) \
+	&& !defined(__BOB__) && !defined(EFI) && !defined(COEX_CPU_BUILD)
 #define TYPEDEF_UINT
 #define TYPEDEF_USHORT
 #endif
@@ -222,13 +221,10 @@ typedef unsigned __int64 uint64;
 #undef USE_TYPEDEF_DEFAULTS
 
 #ifndef BCMWIFI_DISSECTOR_BUILD
-#if defined(__STDC_VERSION__) && (__STDC_VERSION__ <= 201710L)
-/* bool is a builtin for c23 */
 /* BWD build throws errors for two or more data types in declaration */
 #ifndef TYPEDEF_BOOL
-typedef	 unsigned char	bool;
+typedef	/* @abstract@ */ unsigned char	bool;
 #endif /* endif TYPEDEF_BOOL */
-#endif /* __STDC_VERSION__ */
 #endif /* !BCMWIFI_DISSECTOR_BUILD */
 
 /* define uchar, ushort, uint, ulong */
@@ -324,7 +320,7 @@ typedef float64 float_t;
 #endif
 
 #ifndef NULL
-#define	NULL	((void *)0)
+#define	NULL	0
 #endif
 
 #ifndef OFF
@@ -369,17 +365,9 @@ typedef float64 float_t;
 /* Force inlining. */
 #if defined(BWL_COMPILER_GNU)
 #define INLINE_ALWAYS	inline  __attribute__ ((always_inline))
-#if defined(DATAPATH_NOINLINE_PERF)
-/* do not use always inline to avoid increase in DP fn size
- * this can be used for select DP api's based on size
- */
-#define INLINE_ALWAYS_DP	INLINE
-#else
-#define INLINE_ALWAYS_DP	INLINE_ALWAYS
-#endif /* WL_DATAPATH_PERF */
 #else
 #define INLINE_ALWAYS	INLINE
-#endif /* BWL_COMPILER_GNU */
+#endif
 
 #undef TYPEDEF_BOOL
 #undef TYPEDEF_UCHAR

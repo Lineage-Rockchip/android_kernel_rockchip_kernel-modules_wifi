@@ -36,6 +36,7 @@ void wl_ext_update_conn_state(dhd_pub_t *dhd, int ifidx, uint conn_state);
 void wl_ext_backup_eapol_txpkt(dhd_pub_t *dhd, int ifidx, void *pkt);
 void wl_ext_release_eapol_txpkt(dhd_pub_t *dhd, int ifidx, bool rx);
 #endif /* EAPOL_RESEND */
+void wl_ext_iapsta_get_vif_macaddr(struct dhd_pub *dhd, int ifidx, u8 *mac_addr);
 #ifdef WLDWDS
 int wl_ext_iapsta_attach_dwds_netdev(struct net_device *net, int ifidx, uint8 bssidx);
 int wl_ext_iapsta_dettach_dwds_netdev(struct net_device *net, int ifidx, uint8 bssidx);
@@ -57,7 +58,7 @@ int wl_ext_iapsta_enable(struct net_device *dev, char *command, int total_len);
 int wl_ext_iapsta_disable(struct net_device *dev, char *command, int total_len);
 #endif
 void wl_ext_add_remove_pm_enable_work(struct net_device *dev, bool add);
-bool wl_ext_iapsta_other_if_associated(struct net_device *net);
+bool wl_ext_iapsta_other_if_enabled(struct net_device *net);
 bool wl_ext_sta_connecting(struct net_device *dev);
 bool wl_ext_sta_connected(struct net_device *dev);
 void wl_ext_get_chan_str(struct net_device *dev, char *chan_str, int total_len);
@@ -83,15 +84,10 @@ void wl_ext_update_extsae_4way(struct net_device *dev,
 u32 wl_ext_iapsta_update_channel(struct net_device *dev, u32 channel);
 void wl_ext_iapsta_update_iftype(struct net_device *net, int wl_iftype);
 bool wl_ext_iapsta_iftype_enabled(struct net_device *net, int wl_iftype);
-#ifdef WL_PASSIVE_CHAN_UPDATE
-void wl_ext_set_wiphy_update(struct net_device *dev, bool set);
-bool wl_ext_get_wiphy_update(struct net_device *dev);
-#endif /* WL_PASSIVE_CHAN_UPDATE */
-void wl_ext_iapsta_csa_event(struct net_device *dev);
+void wl_ext_iapsta_enable_master_if(struct net_device *dev, bool post);
+void wl_ext_iapsta_restart_master(struct net_device *dev);
 void wl_ext_iapsta_ifadding(struct net_device *net, int ifidx);
-#ifdef WLMESH_CFG80211
 bool wl_ext_iapsta_mesh_creating(struct net_device *net);
-#endif /* WLMESH_CFG80211 */
 void wl_ext_fw_reinit_incsa(struct net_device *dev);
 void wl_ext_send_event_msg(struct net_device *dev, int event, int status,
 	int reason);
@@ -104,7 +100,7 @@ bool wl_ext_add_sta_info(struct net_device *net, u8 *bssid);
 #endif /* STA_MGMT */
 #ifdef SCAN_SUPPRESS
 uint16 wl_ext_scan_suppress(struct net_device *dev, void *scan_params, bool scan_v2,
-	struct wl_ext_chan_info *chan_info);
+	struct wl_chan_info *chan_info);
 void wl_ext_reset_scan_busy(dhd_pub_t *dhd);
 #endif /* SCAN_SUPPRESS */
 #endif

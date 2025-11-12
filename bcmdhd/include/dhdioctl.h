@@ -5,7 +5,7 @@
  *
  * Definitions subject to change without notice.
  *
- * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -24,7 +24,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2025, Broadcom.
+ * Copyright (C) 2024, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -273,9 +273,7 @@ typedef enum dhd_iface_mgmt_policy {
 #endif
 #define DHD_ARPOE_VAL	0x4000
 #define DHD_REORDER_VAL	0x8000
-#define DHD_WL_VAL		0x10000
 #define DHD_NOCHECKDIED_VAL		0x20000 /* UTF WAR */
-#define DHD_WL_VAL2		0x40000
 #define DHD_PNO_VAL		0x80000
 #define DHD_RTT_VAL		0x100000
 #define DHD_MSGTRACE_VAL	0x200000
@@ -289,6 +287,11 @@ typedef enum dhd_iface_mgmt_policy {
 #define DHD_LPBKDTDUMP_VAL	0x20000000
 #define DHD_PRSRV_MEM_VAL	0x40000000
 #define DHD_IOVAR_MEM_VAL	0x80000000
+#define DHD_ANDROID_VAL	0x10000
+#define DHD_IW_VAL	0x20000
+#define DHD_CFG_VAL	0x40000
+#define DHD_CONFIG_VAL	0x80000
+#define DHD_DUMP_VAL	0x100000
 #define DUMP_EAPOL_VAL	0x0001
 #define DUMP_ARP_VAL	0x0002
 #define DUMP_DHCP_VAL	0x0004
@@ -321,7 +324,7 @@ typedef struct dhd_pktgen {
 
 /* Type of test packets to use */
 #define DHD_PKTGEN_ECHO		1 /* Send echo requests */
-#define DHD_PKTGEN_SEND		2 /* Send discard packets */
+#define DHD_PKTGEN_SEND 	2 /* Send discard packets */
 #define DHD_PKTGEN_RXBURST	3 /* Request dongle send N packets */
 #define DHD_PKTGEN_RECV		4 /* Continuous rx from continuous tx dongle */
 #endif /* SDTEST */
@@ -407,14 +410,6 @@ typedef struct debug_buf_dest_stat {
 	uint32 stat[DEBUG_BUF_DEST_MAX];
 } debug_buf_dest_stat_t;
 
-#ifdef DHD_FWTRACE
-/* firmware trace information */
-typedef struct dhd_fwtrace_info {
-	uint32 val;	/* value which specifies firmware trace ON/OFF */
-	uint8 filename[32]; /* 32 bytes for filename */
-} dhd_fwtrace_info_t;
-#endif /* DHD_FWTRACE */
-
 /* devreset */
 #define DHD_DEVRESET_VERSION 1
 
@@ -449,14 +444,6 @@ typedef struct dhd_tx_profile_protocol {
 #define DHD_MAX_PROFILES	(1u)	/* ucode only supports 1 profile atm */
 
 #endif /* defined(DHD_TX_PROFILE) */
-
-/* Pkt LLC get return structure */
-struct dhd_pkt_llc_st {
-	unsigned int len;
-	char buf[];
-};
-
-#define DHD_MAX_PKT_LLC_PAYLOAD_LEN	32u /* Max configurable LLC header len */
 
 typedef struct dhd_loglevel_data {
 	uint32 type;

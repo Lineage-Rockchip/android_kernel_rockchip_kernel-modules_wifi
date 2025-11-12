@@ -1,7 +1,7 @@
 /*
  * Private header file for Linux OS Independent Layer
  *
- * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2025, Broadcom.
+ * Copyright (C) 2024, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -191,11 +191,6 @@ struct osl_info {
 	void *dhd_map_log;
 	void *dhd_unmap_log;
 #endif /* DHD_MAP_LOGGING */
-	spinlock_t bpaccess_lock_r;
-	spinlock_t bpaccess_lock_w;
-	uchar	*fatal_logbuf;
-	uint32	fatal_logbuf_size;
-	osl_timer_t *timers;
 };
 
 #endif /* _LINUX_OSL_PRIV_H_ */

@@ -3,7 +3,7 @@
  *
  * Provides type definitions and function prototypes used to parse ip packet.
  *
- * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -22,7 +22,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2025, Broadcom.
+ * Copyright (C) 2024, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -39,7 +39,9 @@
  * modifications of the software.
  *
  *
- * <<Broadcom-WL-IPTag/Dual:>>
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id$
  */
 
 #ifndef _dhd_ip_h_
@@ -51,7 +53,8 @@
 #include <dhd.h>
 #endif /* DHDTCPACK_SUPPRESS || DHDTCPSYNC_FLOOD_BLK */
 
-typedef enum pkt_frag {
+typedef enum pkt_frag
+{
 	DHD_PKT_FRAG_NONE = 0,
 	DHD_PKT_FRAG_FIRST,
 	DHD_PKT_FRAG_CONT,

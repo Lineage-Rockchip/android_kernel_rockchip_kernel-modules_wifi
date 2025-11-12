@@ -2,7 +2,7 @@
  * Fundamental types and constants relating to 802.11s -
  * "Mesh Networking"
  *
- * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -21,7 +21,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2025, Broadcom.
+ * Copyright (C) 2024, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -43,11 +43,6 @@
 
 #ifndef _802_11s_h_
 #define _802_11s_h_
-
-/* Backwards compatibility for legacy branches. */
-#if !defined(BCM_EXTENSION)
-#define BCM_EXTENSION
-#endif
 
 /* This marks the start of a packed structure section. */
 #include <packed_section_start.h>
@@ -121,7 +116,6 @@ BWL_PRE_PACKED_STRUCT struct dot11_mesh_pathsel {
 typedef struct dot11_mesh_pathsel dot11_mesh_pathsel_t;
 
 /*  Mesh PREQ IE */
-BCM_EXTENSION	/* struct containing flexible array member is the last field. */
 BWL_PRE_PACKED_STRUCT struct mesh_preq_ie {
 	uint8   id;
 	uint8   len;

@@ -1,7 +1,7 @@
 /*
  * Linux Packet (skb) interface
  *
- * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2025, Broadcom.
+ * Copyright (C) 2024, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -49,7 +49,6 @@
 
 #include <osl.h>
 #include <bcmutils.h>
-#include <bcmstdlib_s.h>
 #include <pcicfg.h>
 #include <dngl_stats.h>
 #include <dhd.h>
@@ -65,18 +64,19 @@ bcm_static_pkt_t *bcm_static_skb = 0;
 void* wifi_platform_prealloc(void *adapter, int section, unsigned long size);
 #endif /* CONFIG_DHD_USE_STATIC_BUF */
 
-#ifndef LOG_CUSTOM_PREFIX_AND_RTC
+#ifndef CUSTOM_PREFIX
 #define BCM_PRINT(args)	\
 	do {			\
 		printf args;	\
 	} while (0)
 #else
+#define BCM_PRINT_PREFIX "[%s]"CUSTOM_PREFIX, OSL_GET_RTCTIME()
 #define BCM_PRINT(args)			\
 	do {					\
 		pr_cont(OSL_PRINT_PREFIX);	\
 		pr_cont args;			\
 	} while (0)
-#endif /* LOG_CUSTOM_PREFIX_AND_RTC */
+#endif /* CUSTOM_PREFIX */
 
 #ifdef BCM_OBJECT_TRACE
 /* don't clear the first 4 byte that is the pkt sn */
@@ -130,13 +130,8 @@ int osl_static_mem_init(osl_t *osh, void *adapter)
 				return -ENOMEM;
 			}
 
-			if (memcpy_s(bcm_static_skb,
-				STATIC_BUF_TOTAL_LEN,
-				skb_buff_ptr,
-				sizeof(struct sk_buff *) * (STATIC_PKT_MAX_NUM))) {
-				BCM_PRINT(("static buf too small!\n"));
-				return -ENOMEM;
-			}
+			bcopy(skb_buff_ptr, bcm_static_skb, sizeof(struct sk_buff *) *
+				(STATIC_PKT_MAX_NUM));
 			for (i = 0; i < STATIC_PKT_MAX_NUM; i++) {
 				bcm_static_skb->pkt_use[i] = 0;
 			}
@@ -181,16 +176,7 @@ BCMFASTPATH(osl_alloc_skb)(osl_t *osh, unsigned int len)
 #endif /* DHD_USE_ATOMIC_PKTGET */
 	skb = __dev_alloc_skb(len, flags);
 #else
-
-#ifdef CONFIG_BCMDHD_DAL
-#define BCMDHD_DAL_OVERHEAD 64u
-	/* Extend extra space to store information for offload mode */
-	skb = dev_alloc_skb(len + BCMDHD_DAL_OVERHEAD);
-	if (likely(skb))
-		skb_reserve(skb, BCMDHD_DAL_OVERHEAD);
-#else
 	skb = dev_alloc_skb(len);
-#endif /* CONFIG_BCMDHD_DAL */
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25) */
 
 	return skb;
@@ -424,7 +410,7 @@ BCMFASTPATH(linux_pktfree)(osl_t *osh, void *p, bool send)
 		bcm_object_trace_opr(skb, BCM_OBJDBG_REMOVE, caller, line);
 #endif /* BCM_OBJECT_TRACE */
 
-		if (skb->destructor) {
+		if (skb->destructor || irqs_disabled()) {
 			/* cannot kfree_skb() on hard IRQ (net/core/skbuff.c) if
 			 * destructor exists
 			 */
@@ -767,9 +753,9 @@ osl_pkttrace(osl_t *osh, void *pkt, uint16 bit)
 #endif /* BCMDBG_PTRACE */
 
 char *
-osl_pktlist_dump(osl_t *osh, char *buf, uint bufsz)
+osl_pktlist_dump(osl_t *osh, char *buf)
 {
-	pktlist_dump(&(osh->cmn->pktlist), buf, bufsz);
+	pktlist_dump(&(osh->cmn->pktlist), buf);
 	return buf;
 }
 

@@ -1,7 +1,7 @@
 /*
  * Byte order utilities
  *
- * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2025, Broadcom.
+ * Copyright (C) 2024, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -38,8 +38,6 @@
  *
  *
  * <<Broadcom-WL-IPTag/Dual:>>
- *
- * Edited with the help of GENAI.
  *
  * This file by default provides proper behavior on little-endian architectures.
  * On big-endian architectures, IL_BIGENDIAN should be defined.
@@ -93,20 +91,14 @@
 #define	hton16(i) bcmswap16(i)
 #define	HTON32(i) BCMSWAP32(i)
 #define	hton32(i) bcmswap32(i)
-#define	HTON64(i) BCMSWAP64(i)
-#define	hton64(i) bcmswap64(i)
 #define	NTOH16(i) BCMSWAP16(i)
 #define	ntoh16(i) bcmswap16(i)
 #define	NTOH32(i) BCMSWAP32(i)
 #define	ntoh32(i) bcmswap32(i)
-#define	NTOH64(i) BCMSWAP64(i)
-#define	ntoh64(i) bcmswap64(i)
 #define LTOH16(i) (i)
 #define ltoh16(i) (i)
 #define LTOH32(i) (i)
 #define ltoh32(i) (i)
-#define LTOH64(i) (i)
-#define ltoh64(i) (i)
 #define HTOL16(i) (i)
 #define htol16(i) (i)
 #define HTOL32(i) (i)
@@ -118,20 +110,14 @@
 #define	hton16(i) (i)
 #define	HTON32(i) (i)
 #define	hton32(i) (i)
-#define	HTON64(i) (i)
-#define	hton64(i) (i)
 #define	NTOH16(i) (i)
 #define	ntoh16(i) (i)
 #define	NTOH32(i) (i)
 #define	ntoh32(i) (i)
-#define	NTOH64(i) (i)
-#define	ntoh64(i) (i)
 #define	LTOH16(i) BCMSWAP16(i)
 #define	ltoh16(i) bcmswap16(i)
 #define	LTOH32(i) BCMSWAP32(i)
 #define	ltoh32(i) bcmswap32(i)
-#define	LTOH64(i) BCMSWAP64(i)
-#define	ltoh64(i) bcmswap64(i)
 #define HTOL16(i) BCMSWAP16(i)
 #define htol16(i) bcmswap16(i)
 #define HTOL32(i) BCMSWAP32(i)
@@ -209,27 +195,27 @@
  * avoiding the -fno-inline used in ROM builds.
  */
 
-#define bcmswap16(val) BCM_EXTENSION ({ \
+#define bcmswap16(val) ({ \
 	uint16 _val = (val); \
 	BCMSWAP16(_val); \
 })
 
-#define bcmswap32(val) BCM_EXTENSION ({ \
+#define bcmswap32(val) ({ \
 	uint32 _val = (val); \
 	BCMSWAP32(_val); \
 })
 
-#define bcmswap64(val) BCM_EXTENSION ({ \
+#define bcmswap64(val) ({ \
 	uint64 _val = (val); \
 	BCMSWAP64(_val); \
 })
 
-#define bcmswap32by16(val) BCM_EXTENSION ({ \
+#define bcmswap32by16(val) ({ \
 	uint32 _val = (val); \
 	BCMSWAP32BY16(_val); \
 })
 
-#define bcmswap16_buf(buf, len) BCM_EXTENSION ({ \
+#define bcmswap16_buf(buf, len) ({ \
 	uint16 *_buf = (uint16 *)(buf); \
 	uint _wds = (len) / 2; \
 	while (_wds--) { \
@@ -238,7 +224,7 @@
 	} \
 })
 
-#define bcmswap32_buf(buf, len) BCM_EXTENSION ({ \
+#define bcmswap32_buf(buf, len) ({ \
 	uint32 *_buf = (uint32 *)(buf); \
 	uint _wds = (len) / 4; \
 	while (_wds--) { \
@@ -247,7 +233,7 @@
 	} \
 })
 
-#define bcmswap64_buf(buf, len) BCM_EXTENSION ({ \
+#define bcmswap64_buf(buf, len) ({ \
 	uint64 *_buf = (uint64 *)(buf); \
 	uint _wds = (len) / 8; \
 	while (_wds--) { \
@@ -256,14 +242,14 @@
 	} \
 })
 
-#define htol16_ua_store(val, bytes) BCM_EXTENSION ({ \
+#define htol16_ua_store(val, bytes) ({ \
 	uint16 _val = (val); \
 	uint8 *_bytes = (uint8 *)(bytes); \
 	_bytes[0] = _val & 0xff; \
 	_bytes[1] = _val >> 8; \
 })
 
-#define htol32_ua_store(val, bytes) BCM_EXTENSION ({ \
+#define htol32_ua_store(val, bytes) ({ \
 	uint32 _val = (val); \
 	uint8 *_bytes = (uint8 *)(bytes); \
 	_bytes[0] = _val & 0xff; \
@@ -272,7 +258,7 @@
 	_bytes[3] = _val >> 24; \
 })
 
-#define htol64_ua_store(val, bytes) BCM_EXTENSION ({ \
+#define htol64_ua_store(val, bytes) ({ \
 	uint64 _val = (val); \
 	uint8 *_bytes = (uint8 *)(bytes); \
 	int _ii; \
@@ -282,14 +268,14 @@
 	} \
 })
 
-#define hton16_ua_store(val, bytes) BCM_EXTENSION ({ \
+#define hton16_ua_store(val, bytes) ({ \
 	uint16 _val = (val); \
 	uint8 *_bytes = (uint8 *)(bytes); \
 	_bytes[0] = _val >> 8; \
 	_bytes[1] = _val & 0xff; \
 })
 
-#define hton32_ua_store(val, bytes) BCM_EXTENSION ({ \
+#define hton32_ua_store(val, bytes) ({ \
 	uint32 _val = (val); \
 	uint8 *_bytes = (uint8 *)(bytes); \
 	_bytes[0] = _val >> 24; \
@@ -298,32 +284,32 @@
 	_bytes[3] = _val & 0xff; \
 })
 
-#define ltoh16_ua(bytes) BCM_EXTENSION ({ \
+#define ltoh16_ua(bytes) ({ \
 	const uint8 *_bytes = (const uint8 *)(bytes); \
 	_LTOH16_UA(_bytes); \
 })
 
-#define ltoh32_ua(bytes) BCM_EXTENSION ({ \
+#define ltoh32_ua(bytes) ({ \
 	const uint8 *_bytes = (const uint8 *)(bytes); \
 	_LTOH32_UA(_bytes); \
 })
 
-#define ltoh64_ua(bytes) BCM_EXTENSION ({ \
+#define ltoh64_ua(bytes) ({ \
 	const uint8 *_bytes = (const uint8 *)(bytes); \
 	_LTOH64_UA(_bytes); \
 })
 
-#define ntoh16_ua(bytes) BCM_EXTENSION ({ \
+#define ntoh16_ua(bytes) ({ \
 	const uint8 *_bytes = (const uint8 *)(bytes); \
 	_NTOH16_UA(_bytes); \
 })
 
-#define ntoh32_ua(bytes) BCM_EXTENSION ({ \
+#define ntoh32_ua(bytes) ({ \
 	const uint8 *_bytes = (const uint8 *)(bytes); \
 	_NTOH32_UA(_bytes); \
 })
 
-#define ntoh64_ua(bytes) BCM_EXTENSION ({ \
+#define ntoh64_ua(bytes) ({ \
 	const uint8 *_bytes = (const uint8 *)(bytes); \
 	_NTOH64_UA(_bytes); \
 })

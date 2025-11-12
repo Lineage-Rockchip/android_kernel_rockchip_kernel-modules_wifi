@@ -1,7 +1,7 @@
 /*
  * bcmevent read-only data shared by kernel or app layers
  *
- * Copyright (C) 2025 Synaptics Incorporated. All rights reserved.
+ * Copyright (C) 2024 Synaptics Incorporated. All rights reserved.
  *
  * This software is licensed to you under the terms of the
  * GNU General Public License version 2 (the "GPL") with Broadcom special exception.
@@ -20,7 +20,7 @@
  * SYNAPTICS' TOTAL CUMULATIVE LIABILITY TO ANY PARTY SHALL NOT
  * EXCEED ONE HUNDRED U.S. DOLLARS
  *
- * Copyright (C) 2025, Broadcom.
+ * Copyright (C) 2024, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -132,13 +132,13 @@ static const bcmevent_name_str_t bcmevent_names[] = {
 	BCMEVENT_NAME(WLC_E_ACTION_FRAME),
 	BCMEVENT_NAME(WLC_E_ACTION_FRAME_RX),
 	BCMEVENT_NAME(WLC_E_ACTION_FRAME_COMPLETE),
-	BCMEVENT_NAME(WLC_E_AP_STARTED),
-	BCMEVENT_NAME(WLC_E_DFS_AP_STOP),
-	BCMEVENT_NAME(WLC_E_DFS_AP_RESUME),
 #if defined(NDIS)
 	BCMEVENT_NAME(WLC_E_PRE_ASSOC_IND),
 	BCMEVENT_NAME(WLC_E_PRE_REASSOC_IND),
 	BCMEVENT_NAME(WLC_E_CHANNEL_ADOPTED),
+	BCMEVENT_NAME(WLC_E_AP_STARTED),
+	BCMEVENT_NAME(WLC_E_DFS_AP_STOP),
+	BCMEVENT_NAME(WLC_E_DFS_AP_RESUME),
 	BCMEVENT_NAME(WLC_E_ASSOC_IND_NDIS),
 	BCMEVENT_NAME(WLC_E_REASSOC_IND_NDIS),
 	BCMEVENT_NAME(WLC_E_ACTION_FRAME_RX_NDIS),
@@ -189,9 +189,9 @@ static const bcmevent_name_str_t bcmevent_names[] = {
 #ifdef WLWNM
 	BCMEVENT_NAME(WLC_E_WNM_STA_SLEEP),
 #endif /* WLWNM */
-#if defined(FTM) || defined(WL_PROXDETECT) || defined(RTT_SUPPORT)
+#if defined(WL_PROXDETECT) || defined(RTT_SUPPORT)
 	BCMEVENT_NAME(WLC_E_PROXD),
-#endif /* FTM || WL_PROXDETECT || RTT_SUPPORT */
+#endif
 	BCMEVENT_NAME(WLC_E_CCA_CHAN_QUAL),
 	BCMEVENT_NAME(WLC_E_BSSID),
 #ifdef PROP_TXSTATUS
@@ -215,6 +215,7 @@ static const bcmevent_name_str_t bcmevent_names[] = {
 	BCMEVENT_NAME(WLC_E_CSA_START_IND),
 	BCMEVENT_NAME(WLC_E_CSA_DONE_IND),
 	BCMEVENT_NAME(WLC_E_CSA_FAILURE_IND),
+	BCMEVENT_NAME(WLC_E_RMC_EVENT),
 	BCMEVENT_NAME(WLC_E_DPSTA_INTF_IND),
 	BCMEVENT_NAME(WLC_E_ALLOW_CREDIT_BORROW),
 	BCMEVENT_NAME(WLC_E_MSCH),
@@ -224,7 +225,6 @@ static const bcmevent_name_str_t bcmevent_names[] = {
 	BCMEVENT_NAME(WLC_E_DMA_TXFLUSH_COMPLETE),
 	BCMEVENT_NAME(WLC_E_PSK_AUTH),
 	BCMEVENT_NAME(WLC_E_SDB_TRANSITION),
-	BCMEVENT_NAME(WLC_E_RADAR_DETECTED),
 	BCMEVENT_NAME(WLC_E_PFN_SCAN_BACKOFF),
 	BCMEVENT_NAME(WLC_E_PFN_BSSID_SCAN_BACKOFF),
 	BCMEVENT_NAME(WLC_E_AGGR_EVENT),
@@ -245,14 +245,14 @@ static const bcmevent_name_str_t bcmevent_names[] = {
 	BCMEVENT_NAME(WLC_E_ROAM_CACHE_UPDATE),
 	BCMEVENT_NAME(WLC_E_AP_BCN_DRIFT),
 	BCMEVENT_NAME(WLC_E_PFN_SCAN_ALLGONE_EXT),
-#ifdef WL_CLIENT_SAE
-	BCMEVENT_NAME(WLC_E_AUTH_START),
-#endif /* WL_CLIENT_SAE */
 #ifdef WL_TWT
 	BCMEVENT_NAME(WLC_E_TWT),
 #endif /* WL_TWT */
 	BCMEVENT_NAME(WLC_E_AMT),
 	BCMEVENT_NAME(WLC_E_ROAM_SCAN_RESULT),
+#if defined(XRAPI)
+	BCMEVENT_NAME(WLC_E_XR_SOFTAP_PSMODE),
+#endif /* XRAPI */
 #ifdef WL_SIB_COEX
 	BCMEVENT_NAME(WLC_E_SIB),
 #endif /* WL_SIB_COEX */
@@ -266,12 +266,9 @@ static const bcmevent_name_str_t bcmevent_names[] = {
 	BCMEVENT_NAME(WLC_E_BCN_TSF),
 	BCMEVENT_NAME(WLC_E_OWE_INFO),
 	BCMEVENT_NAME(WLC_E_ULMU_DISABLED_REASON_UPD),
-	BCMEVENT_NAME(WLC_E_CSI_DATA),
-	BCMEVENT_NAME(WLC_E_EDS_EVENT),
-	BCMEVENT_NAME(WLC_E_ICM),
-	BCMEVENT_NAME(WLC_E_AP_BCN_MUTE),
-	BCMEVENT_NAME(WLC_E_VLPTPC),
-	BCMEVENT_NAME(WLC_E_SBI_SC_EVENT)
+#ifdef CSI_SUPPORT
+	BCMEVENT_NAME(WLC_E_CSI)
+#endif /* CSI_SUPPORT */
 };
 
 const char *bcmevent_get_name(uint event_type)

@@ -1,0 +1,187 @@
+config WLAN_VENDOR_SWT6621S
+	tristate "SWT6621S chipset support"
+	depends on CFG80211
+	select CFG80211_WEXT_EXPORT
+	help
+	This module adds support for SeekWave 802.11ax wireless adapter chipset.
+
+	If you have a wireless card belonging to this class, say Y.
+
+	Note that the answer to this question doesn't directly affect the
+	kernel: saying N will just cause the configurator to skip all the
+	questions about these cards. If you say Y, you will be asked for
+	your specific card in the following questions.
+
+if WLAN_VENDOR_SWT6621S
+config SWT6621S_STA_SME_EXT
+	bool "SWT6621S STA Mode External SME"
+	default y
+	help
+	Say Y here to enable external SME for STA mode
+
+config SWT6621S_SAP_SME_EXT
+	bool "SWT6621S Softap Mode External SME"
+	default y
+	help
+	Say Y here to enable external SME for SAP mode
+
+config SWT6621S_SCAN_RANDOM_MAC
+	bool "SWT6621S SCAN Random MAC"
+	default y
+	help
+	Say Y here to support random mac scan
+
+config SWT6621S_LEGACY_P2P
+	bool "SWT6621S Legacy P2P"
+	default n
+	help
+	Say Y here to create interface p2p0 default
+
+config SWT6621S_TX_WORKQUEUE
+	bool "SWT6621S TX Workqueue"
+	default y
+	help
+	Say Y here to support TX workqueue
+
+config SWT6621S_REPEATER_MODE
+        bool "SWT6621S Repeater Mode"
+        default n
+        help
+        Say Y here to support repeater mode
+
+config SWT6621S_HIGH_PRIORITY
+	bool "SWT6621S thread priority"
+	default y
+	help
+	Say Y here to set high priority
+
+config SWT6621S_VENDOR
+	bool "SWT6621S Vendor Command"
+	default y
+	help
+	Say Y here to enable vendor command
+
+config SWT6621S_REGD_SELF_MANAGED
+	bool "SWT6621S Regdomain"
+	depends on !SWT6621S_DFS_MASTER
+	default y
+	help
+	Say Y here to support regdomain database in driver
+
+config SWT6621S_TDLS
+	bool "SWT6621S TDLS"
+	default n
+	help
+	Say Y here to enable TDLS
+
+config SWT6621S_DFS_MASTER
+	bool "SWT6621S DFS Master"
+	default n
+	help
+	Say Y here to support DFS master
+
+config SWT6621S_EDMA
+	bool "SWT6621S EDMA"
+	default n
+	help
+	Say Y here to support EDMA
+
+config SWT6621S_OFFCHAN_TX
+	bool "Seekwave OFFCHAN TX"
+	default n
+	help
+	Say Y here to support off-channel TX
+
+config SWT6621S_6GHZ
+	bool "Seekwave 6GHz"
+	default n
+	help
+	Say Y here to support 6GHz
+
+config SWT6621S_CALIB_DPD
+	bool "Seekwave DPD"
+	default y
+	help
+	Say Y here to support DPD
+
+config SWT6621S_CALIB_APPEND_BUS_ID
+	bool "SWT6621S Calib file name append BUS ID"
+	default y
+	help
+	Say Y here to append BUS ID
+
+config SWT6621S_CALIB_APPEND_MODULE_ID
+	bool "SWT6621S calib file name append module ID"
+	default y
+	help
+	Say Y here to append module ID
+
+config SWT6621S_USB3_WORKAROUND
+	bool "SWT6621S USB 3.0 workaround"
+	default n
+	help
+	Say Y here to enable workaround for USB 3.0
+
+config SWT6621S_RX_REORDER_TIMEOUT
+	int "SWT6621S reorder timeout (50-500)"
+	range 50 500
+	default 100
+
+config SWT6621S_SKB_RECYCLE
+	bool "SWT6621S skb recycle"
+	default n
+	help
+	Say Y here to support skb recycle
+
+config SWT6621S_DEFAULT_COUNTRY
+	string "SWT6621S Default Country Code"
+	default ""
+	help
+	Set Default Country Code
+
+config SWT6621S_CHIP_ID
+	string "SWT6621S Chip ID"
+	default ""
+	help
+	Set Chip ID
+
+config SWT6621S_PROJECT_NAME
+	string "SWT6621S Default Project Name"
+	default "SEEKWAVE"
+	help
+	Set Default Project Name
+
+choice
+	prompt "SWT6621S Log Level"
+	default SWT6621S_LOG_DEBUG
+	help
+	SEEKWAVE Log Level
+
+config SWT6621S_LOG_ERROR
+	bool "ERROR"
+	help
+	This feature set Error log level
+
+config SWT6621S_LOG_WARN
+	bool "WARN"
+	help
+	This feature set Warnning log level
+
+config SWT6621S_LOG_INFO
+	bool "INFO"
+	help
+	This feature set INFO log level
+
+config SWT6621S_LOG_DEBUG
+	bool "DEBUG"
+	help
+	This feature set DEBUG log level
+
+config SWT6621S_LOG_DETAIL
+	bool "DETAIL"
+	help
+	This feature set DETAIL log level
+
+endchoice
+
+endif
