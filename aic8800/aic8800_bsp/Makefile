@@ -116,6 +116,11 @@ CROSS_COMPILE ?=
 endif
 ###########################################
 
+# Standalone build only.  kbuild sets KERNELRELEASE when it includes this file
+# (make -C <kernel> M=<here>), which is how the Android build gets here; the
+# recursive rules below would then fight the build that is already running.
+ifeq ($(KERNELRELEASE),)
+
 all: modules
 modules:
 	make -C $(KDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
@@ -131,4 +136,6 @@ uninstall:
 
 clean:
 	rm -rf *.o *.ko *.o.* *.mod.* modules.* Module.* .a* .o* .*.o.* *.mod .tmp* .cache.mk built-in.a
+
+endif # KERNELRELEASE
 

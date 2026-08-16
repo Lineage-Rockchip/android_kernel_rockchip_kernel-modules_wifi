@@ -26,17 +26,21 @@ ccflags-y += -DAIC_TRACE_INCLUDE_PATH=$(src)
 ccflags-$(CONFIG_AUTO_PM) += -DCONFIG_AUTO_PM
 
 ifeq ($(CONFIG_PLATFORM_ROCKCHIP), y)
+ifeq ($(KERNELRELEASE),)
 ARCH = arm64
 KDIR = /home/yaya/E/Rockchip/3566/firefly/Android11.0/Firefly-RK356X_Android11.0_git_20210824/RK356X_Android11.0/kernel
 CROSS_COMPILE = /home/yaya/E/Rockchip/3566/firefly/Android11.0/Firefly-RK356X_Android11.0_git_20210824/RK356X_Android11.0/prebuilts/gcc/linux-x86/aarch64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
+endif
 ccflags-$(CONFIG_PLATFORM_ROCKCHIP) += -DCONFIG_PLATFORM_ROCKCHIP
 ccflags-y += -DANDROID_PLATFORM
 endif
 
 ifeq ($(CONFIG_PLATFORM_ROCKCHIP2), y)
+ifeq ($(KERNELRELEASE),)
 ARCH = arm64
 KDIR = /home/yaya/E/Rockchip/3566/firefly/Android11.0/Firefly-RK356X_Android11.0_git_20210824/RK356X_Android11.0/kernel
 CROSS_COMPILE = /home/yaya/E/Rockchip/3566/firefly/Android11.0/Firefly-RK356X_Android11.0_git_20210824/RK356X_Android11.0/prebuilts/gcc/linux-x86/aarch64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
+endif
 ccflags-$(CONFIG_PLATFORM_ROCKCHIP2) += -DCONFIG_PLATFORM_ROCKCHIP2
 ccflags-y += -DANDROID_PLATFORM
 endif
@@ -64,6 +68,9 @@ CROSS_COMPILE ?=
 endif
 
 
+# Standalone build only; see the note in ../Makefile.
+ifeq ($(KERNELRELEASE),)
+
 all: modules
 modules:
 	make -C $(KDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
@@ -79,5 +86,7 @@ uninstall:
 
 clean:
 	rm -rf *.o *.ko *.o.* *.mod.* modules.* Module.* .a* .o* .*.o.* *.mod .tmp* .cache.mk
+
+endif # KERNELRELEASE
 
 

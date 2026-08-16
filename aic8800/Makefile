@@ -6,8 +6,6 @@ obj-$(CONFIG_AIC8800_BTLPM_SUPPORT) += aic8800_btlpm/
 obj-$(CONFIG_AIC8800_WLAN_SUPPORT) += aic8800_fdrv/
 obj-$(CONFIG_AIC_WLAN_SUPPORT) += aic8800_bsp/
 
-MAKEFLAGS +=-j$(shell nproc)
-
 ########## config option ##########
 export CONFIG_USE_FW_REQUEST = n
 export CONFIG_PREALLOC_RX_SKB = n
@@ -25,35 +23,61 @@ export CONFIG_PLATFORM_AMLOGIC = n
 export CONFIG_PLATFORM_UBUNTU = n
 
 ifeq ($(CONFIG_PLATFORM_ROCKCHIP), y)
+ccflags-y += -DANDROID_PLATFORM
+ccflags-y += -DCONFIG_PLATFORM_ROCKCHIP
+endif
+
+ifeq ($(CONFIG_PLATFORM_ROCKCHIP2), y)
+ccflags-y += -DANDROID_PLATFORM
+ccflags-y += -DCONFIG_PLATFORM_ROCKCHIP2
+endif
+
+ifeq ($(CONFIG_PLATFORM_ALLWINNER), y)
+export CONFIG_SUPPORT_LPM = y
+ccflags-y += -DANDROID_PLATFORM
+endif
+
+ifeq ($(CONFIG_PLATFORM_AMLOGIC), y)
+ccflags-y += -DANDROID_PLATFORM
+export CONFIG_SUPPORT_LPM = y
+endif
+###########################################
+
+#
+# Everything below is for building this driver by hand, outside of a kernel
+# tree that is already driving the build.  KERNELRELEASE is set only when
+# kbuild has included this file (make -C <kernel> M=<here>), which is how the
+# Android build reaches us -- see TARGET_KERNEL_EXT_MODULES in
+# device/rockchip/rk3576-common/BoardConfigCommon.mk.  Hiding the hardcoded
+# vendor paths and the recursive rules behind this guard keeps them from
+# overriding the toolchain and job server the kernel build already set up.
+#
+ifeq ($(KERNELRELEASE),)
+
+MAKEFLAGS +=-j$(shell nproc)
+
+ifeq ($(CONFIG_PLATFORM_ROCKCHIP), y)
 ARCH = arm64
 KDIR = /home/yaya/E/Rockchip/3566/firefly/Android11.0/Firefly-RK356X_Android11.0_git_20210824/RK356X_Android11.0/kernel
 CROSS_COMPILE = /home/yaya/E/Rockchip/3566/firefly/Android11.0/Firefly-RK356X_Android11.0_git_20210824/RK356X_Android11.0/prebuilts/gcc/linux-x86/aarch64/gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
-ccflags-y += -DANDROID_PLATFORM
-ccflags-y += -DCONFIG_PLATFORM_ROCKCHIP
 endif
 
 ifeq ($(CONFIG_PLATFORM_ROCKCHIP2), y)
 KDIR := /home/yaya/E/Rockchip/3126/Android6/kernel
 ARCH ?= arm
 CROSS_COMPILE ?= /home/yaya/E/Rockchip/3288/Android5/rk3288_JHY/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
-ccflags-y += -DANDROID_PLATFORM
-ccflags-y += -DCONFIG_PLATFORM_ROCKCHIP2
 endif
 
 ifeq ($(CONFIG_PLATFORM_ALLWINNER), y)
 KDIR  = /home/yaya/E/Allwinner/A133/Android10/linux-4.9
 ARCH = arm64
 CROSS_COMPILE = /home/yaya/E/Allwinner/r818/Android10/lichee/out/gcc-linaro-5.3.1-2016.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
-export CONFIG_SUPPORT_LPM = y
-ccflags-y += -DANDROID_PLATFORM
 endif
 
 ifeq ($(CONFIG_PLATFORM_AMLOGIC), y)
 ARCH = arm
 CROSS_COMPILE = /home/yaya/D/Workspace/CyberQuantum/JinHaoYue/amls905x3/SDK/20191101-0tt-asop/android9.0/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androidkernel-
 KDIR = /home/yaya/D/Workspace/CyberQuantum/JinHaoYue/amls905x3/SDK/20191101-0tt-asop/android9.0/out/target/product/u202/obj/KERNEL_OBJ/
-ccflags-y += -DANDROID_PLATFORM
-export CONFIG_SUPPORT_LPM = y
 endif
 
 ifeq ($(CONFIG_PLATFORM_UBUNTU), y)
@@ -64,7 +88,6 @@ MODDESTDIR = /lib/modules/$(KVER)/kernel/drivers/net/wireless/aic8800
 ARCH = x86_64
 CROSS_COMPILE ?=
 endif
-###########################################
 
 all: modules
 modules:
@@ -89,3 +112,4 @@ clean:
 	cd aic8800_btlpm/;make clean;cd ..
 	rm -rf modules.order Module.symvers .modules.order.cmd .Module.symvers.cmd .tmp_versions/
 
+endif # KERNELRELEASE
